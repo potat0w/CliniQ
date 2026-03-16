@@ -96,21 +96,13 @@ const getDoctors = asyncHandler(async (req, res) => {
   const { data: doctors, error } = await supabase
     .from('doctors')
     .select(`
-      id,
-      name,
+      doctor_id,
+      doctor_name,
       email,
-      phone,
-      specialty,
-      experience_years,
-      chamber_id,
-      chambers (
-        id,
-        name,
-        address,
-        phone
-      )
+      speciality,
+      experience
     `)
-    .eq('is_active', true);
+    .eq('email', 'is not', null);
 
   if (error) {
     return res.status(400).json({ error: error.message });
@@ -123,12 +115,11 @@ const getDoctorAvailability = asyncHandler(async (req, res) => {
   const { doctorId } = req.params;
 
   const { data: availability, error } = await supabase
-    .from('doctor_availability')
+    .from('slots')
     .select('*')
     .eq('doctor_id', doctorId)
-    .eq('is_available', true)
-    .gte('date', new Date().toISOString().split('T')[0])
-    .order('date', { ascending: true })
+    .eq('status', 'available')
+    .order('day_of_week', { ascending: true })
     .order('start_time', { ascending: true });
 
   if (error) {
@@ -139,32 +130,52 @@ const getDoctorAvailability = asyncHandler(async (req, res) => {
 });
 
 const bookAppointment = asyncHandler(async (req, res) => {
-  const { doctorId, availabilityId, notes } = req.body;
+  const { doctorId, slotId, notes } = req.body;
   const patientId = req.user.userId;
 
-  const { data: availability, error: availabilityError } = await supabase
-    .from('doctor_availability')
+  const { data: slot, error: slotError } = await supabase
+    .from('slots')
     .select('*')
-    .eq('id', availabilityId)
+    .eq('slot_id', slotId)
     .eq('doctor_id', doctorId)
-    .eq('is_available', true)
+    .eq('status', 'available')
     .single();
 
-  if (availabilityError || !availability) {
+  if (slotError || !slot) {
     return res.status(400).json({ error: 'Time slot not available' });
+  }
+
+  // Get patient info for name and phone
+  const { data: patient, error: patientError } = await supabase
+    .from('patients')
+    .select('name, phone')
+    .eq('patient_id', patientId)
+    .single();
+
+  // Generate a unique appointment_id
+  const { data: maxId, error: maxIdError } = await supabase
+    .from('appointments')
+    .select('appointment_id')
+    .order('appointment_id', { ascending: false })
+    .limit(1);
+
+  let newAppointmentId = 1;
+  if (!maxIdError && maxId.length > 0) {
+    newAppointmentId = maxId[0].appointment_id + 1;
   }
 
   const { data: appointment, error } = await supabase
     .from('appointments')
     .insert([{
-      patient_id: patientId,
+      appointment_id: newAppointmentId,
       doctor_id: doctorId,
-      availability_id: availabilityId,
-      appointment_date: availability.date,
-      start_time: availability.start_time,
-      end_time: availability.end_time,
-      status: 'scheduled',
-      notes
+      chamber_id: slot.chamber_id,
+      day_of_week: slot.day_of_week,
+      start_time: slot.start_time,
+      end_time: slot.end_time,
+      patient_name: patient.name,
+      patient_phone: patient.phone,
+      status: 'scheduled'
     }])
     .select()
     .single();
@@ -174,9 +185,9 @@ const bookAppointment = asyncHandler(async (req, res) => {
   }
 
   await supabase
-    .from('doctor_availability')
-    .update({ is_available: false })
-    .eq('id', availabilityId);
+    .from('slots')
+    .update({ status: 'booked' })
+    .eq('slot_id', slotId);
 
   res.status(201).json({
     message: 'Appointment booked successfully',
@@ -192,15 +203,20 @@ const getAppointments = asyncHandler(async (req, res) => {
     .select(`
       *,
       doctors (
-        id,
-        name,
-        specialty,
-        phone
+        doctor_id,
+        doctor_name,
+        email,
+        speciality
       )
     `)
-    .eq('patient_id', patientId)
-    .order('appointment_date', { ascending: true })
-    .order('start_time', { ascending: true });
+    .eq('patient_name', (
+      supabase
+        .from('patients')
+        .select('name')
+        .eq('patient_id', patientId)
+        .single()
+    ))
+    .order('booking_time', { ascending: true });
 
   if (error) {
     return res.status(400).json({ error: error.message });

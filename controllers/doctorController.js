@@ -108,7 +108,6 @@ const loginDoctor = asyncHandler(async (req, res) => {
       id: doctor.doctor_id,
       name: doctor.doctor_name,
       email: doctor.email,
-      phone: doctor.phone,
       specialty: doctor.speciality,
       experience_years: doctor.experience
     },
@@ -206,17 +205,19 @@ const getPatientHistory = asyncHandler(async (req, res) => {
 });
 
 const addAvailability = asyncHandler(async (req, res) => {
-  const { date, startTime, endTime } = req.body;
+  const { dayOfWeek, startTime, endTime, fee, chamberId } = req.body;
   const doctorId = req.user.userId;
 
   const { data: availability, error } = await supabase
-    .from('doctor_availability')
+    .from('slots')
     .insert([{
       doctor_id: doctorId,
-      date,
+      chamber_id: chamberId || 1,
+      day_of_week: dayOfWeek,
       start_time: startTime,
       end_time: endTime,
-      is_available: true
+      fee: fee || 1000,
+      status: 'available'
     }])
     .select()
     .single();
@@ -226,7 +227,7 @@ const addAvailability = asyncHandler(async (req, res) => {
   }
 
   res.status(201).json({
-    message: 'Availability added successfully',
+    message: 'Slot added successfully',
     availability
   });
 });
@@ -235,11 +236,11 @@ const getAvailability = asyncHandler(async (req, res) => {
   const doctorId = req.user.userId;
 
   const { data: availability, error } = await supabase
-    .from('doctor_availability')
+    .from('slots')
     .select('*')
     .eq('doctor_id', doctorId)
-    .gte('date', new Date().toISOString().split('T')[0])
-    .order('date', { ascending: true })
+    .eq('status', 'available')
+    .order('day_of_week', { ascending: true })
     .order('start_time', { ascending: true });
 
   if (error) {
