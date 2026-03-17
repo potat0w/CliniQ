@@ -12,6 +12,7 @@ const doctorRoutes = require('./routes/doctorRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const transcriptionRoutes = require('./routes/transcriptionRoutes');
+const medicalAssistantRoutes = require('./routes/medicalAssistantRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -49,6 +50,7 @@ app.use('/api/doctors', doctorRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api', transcriptionRoutes);
+app.use('/api/medical', medicalAssistantRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
