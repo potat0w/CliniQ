@@ -13,6 +13,10 @@ export default function VoiceAgent() {
   const [recommendedDoctors, setRecommendedDoctors] = useState<any[]>([]);
   const [error, setError] = useState<string>("");
   const [user, setUser] = useState<any>(null);
+  const [availableSlots, setAvailableSlots] = useState<any[]>([]);
+  const [selectedDoctorForBooking, setSelectedDoctorForBooking] = useState<any>(null);
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -26,6 +30,12 @@ export default function VoiceAgent() {
       setUser(JSON.parse(userData));
     }
   }, []);
+
+  // Toast notification helper
+  const showToast = (message: string, type: 'success' | 'error' | 'info') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const startRecording = useCallback(async () => {
     try {
@@ -184,9 +194,45 @@ export default function VoiceAgent() {
 
   const bookDoctorAppointment = async (doctor: any) => {
     if (!user) {
-      alert('Please login to book an appointment');
+      showToast('Please login to book an appointment', 'error');
       return;
     }
+
+    try {
+      const token = localStorage.getItem('token');
+      
+      // First get available slots for doctor
+      const slotsResponse = await fetch(`http://localhost:5000/api/patients/doctors/${doctor.id}/availability`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!slotsResponse.ok) {
+        showToast('Failed to fetch doctor availability', 'error');
+        return;
+      }
+
+      const slots = await slotsResponse.json();
+      
+      if (slots.length === 0) {
+        showToast('No available slots for this doctor', 'info');
+        return;
+      }
+
+      // Show available slots in modal
+      setAvailableSlots(slots);
+      setSelectedDoctorForBooking(doctor);
+      setShowBookingModal(true);
+      
+    } catch (error) {
+      console.error('Error fetching doctor availability:', error);
+      showToast('Failed to fetch doctor availability', 'error');
+    }
+  };
+
+  const confirmBooking = async (slot: any) => {
+    if (!selectedDoctorForBooking || !user) return;
 
     try {
       const token = localStorage.getItem('token');
@@ -198,21 +244,28 @@ export default function VoiceAgent() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          doctorId: doctor.id,
+          doctorId: selectedDoctorForBooking.id,
+          slotId: slot.slot_id,
           notes: `Booked from voice assistant recommendation for ${medicalAnalysis?.symptom}`
-          // No slotId - backend will create default slot
         })
       });
 
       if (response.ok) {
-        alert(`Appointment booked successfully with Dr. ${doctor.name}!\n\nAppointment scheduled for tomorrow at 9:00 AM.\n\nYou will receive a confirmation with details.`);
+        // Convert day number to day name
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const dayName = dayNames[slot.day_of_week] || slot.day_of_week;
+        
+        showToast(`Appointment booked with Dr. ${selectedDoctorForBooking.name} for ${dayName} (${slot.start_time}-${slot.end_time})`, 'success');
+        setShowBookingModal(false);
+        setAvailableSlots([]);
+        setSelectedDoctorForBooking(null);
       } else {
         const error = await response.json();
-        alert(error.error || 'Failed to book appointment');
+        showToast(error.error || 'Failed to book appointment', 'error');
       }
     } catch (error) {
       console.error('Error booking appointment:', error);
-      alert('Failed to book appointment');
+      showToast('Failed to book appointment', 'error');
     }
   };
 
@@ -227,6 +280,34 @@ export default function VoiceAgent() {
           <p>• Get AI analysis and doctor recommendations</p>
         </div>
       </div>
+      
+      {/* Toast Notifications */}
+      {toast && (
+        <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 ${
+          toast.type === 'success' ? 'bg-green-600 text-white' :
+          toast.type === 'error' ? 'bg-red-600 text-white' :
+          'bg-blue-600 text-white'
+        }`}>
+          <div className="flex items-center">
+            {toast.type === 'success' && (
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 00016zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l2-2z" clipRule="evenodd"/>
+              </svg>
+            )}
+            {toast.type === 'error' && (
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 00016zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293z" clipRule="evenodd"/>
+              </svg>
+            )}
+            {toast.type === 'info' && (
+              <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
+              </svg>
+            )}
+            <span className="font-medium">{toast.message}</span>
+          </div>
+        </div>
+      )}
       
       {/* Recording Controls */}
       <div className="flex flex-col items-center space-y-4">
@@ -343,7 +424,7 @@ export default function VoiceAgent() {
         <div className="p-6 bg-green-900 border border-green-700 rounded-lg">
           <h3 className="text-lg font-semibold text-green-300 mb-4">👨‍⚕️ Recommended Doctors</h3>
           <div className="space-y-4">
-            {recommendedDoctors.slice(0, 5).map((doctor, index) => (
+            {recommendedDoctors.map((doctor, index) => (
               <div key={doctor.id} className="bg-gray-800 p-4 rounded-lg border border-green-600">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -376,11 +457,6 @@ export default function VoiceAgent() {
               </div>
             ))}
           </div>
-          {recommendedDoctors.length > 5 && (
-            <p className="text-green-300 text-sm mt-4">
-              ... and {recommendedDoctors.length - 5} more doctors available
-            </p>
-          )}
         </div>
       )}
       
@@ -397,6 +473,55 @@ export default function VoiceAgent() {
           {recordingTime > 0 ? `Duration: ${formatTime(recordingTime)}` : "Click microphone to begin"}
         </p>
       </div>
+      
+      {/* Booking Modal */}
+      {showBookingModal && selectedDoctorForBooking && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Book Appointment with Dr. {selectedDoctorForBooking.name}
+            </h3>
+            <p className="text-gray-300 mb-4">Select an available time slot:</p>
+            
+            <div className="space-y-3 max-h-64 overflow-y-auto">
+              {availableSlots.map((slot, index) => {
+                // Convert day number to day name
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const dayName = dayNames[slot.day_of_week] || slot.day_of_week;
+                
+                return (
+                  <button
+                    key={slot.slot_id}
+                    onClick={() => confirmBooking(slot)}
+                    className="w-full bg-gray-700 hover:bg-gray-600 text-white p-3 rounded-lg text-left transition-colors duration-200"
+                  >
+                    <div className="font-medium">{dayName}</div>
+                    <div className="text-sm text-gray-300">
+                      {slot.start_time} - {slot.end_time}
+                    </div>
+                    <div className="text-xs text-green-400">
+                      Fee: ${slot.fee || 1000}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            
+            <div className="mt-4 flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowBookingModal(false);
+                  setAvailableSlots([]);
+                  setSelectedDoctorForBooking(null);
+                }}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

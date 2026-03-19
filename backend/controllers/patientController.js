@@ -126,7 +126,8 @@ const getDoctorAvailability = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 
-  res.json(availability);
+  // Return available slots or empty array if none exist
+  res.json(availability || []);
 });
 
 const bookAppointment = asyncHandler(async (req, res) => {
