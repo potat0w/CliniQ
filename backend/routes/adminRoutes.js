@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   loginAdmin,
+  registerAdmin,
   getAllDoctors,
   createDoctor,
   updateDoctor,
@@ -20,6 +21,7 @@ const {
 const { authenticateToken, authorizeRole } = require('../middlewares/authMiddleware');
 
 router.post('/login', loginAdmin);
+router.post('/register', registerAdmin);
 
 router.use(authenticateToken);
 router.use(authorizeRole('admin'));

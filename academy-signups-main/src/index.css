@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 220 10% 6%;
+    --foreground: 210 20% 90%;
+
+    --card: 220 10% 8%;
+    --card-foreground: 210 20% 90%;
+
+    --popover: 220 10% 8%;
+    --popover-foreground: 210 20% 90%;
+
+    --primary: 0 0% 100%;
+    --primary-foreground: 220 10% 6%;
+
+    --secondary: 220 10% 12%;
+    --secondary-foreground: 210 20% 85%;
+
+    --muted: 220 10% 15%;
+    --muted-foreground: 210 15% 55%;
+
+    --accent: 0 0% 100%;
+    --accent-foreground: 220 10% 6%;
+
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 10% 15%;
+    --input: 220 10% 12%;
+    --ring: 0 0% 100%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --glow-primary: 0 0% 100%;
+    --surface-elevated: 220 10% 10%;
+    --surface-sunken: 220 10% 5%;
+    
+    /* Neumorphic shadows */
+    --shadow-neumorphic-dark: 8px 8px 16px hsl(220 10% 3%);
+    --shadow-neumorphic-light: -8px -8px 16px hsl(220 10% 12%);
+    --shadow-neumorphic-inset: inset 4px 4px 8px hsl(220 10% 4%), inset -4px -4px 8px hsl(220 10% 10%);
+  }
+
+  .dark {
+    --background: 220 10% 6%;
+    --foreground: 210 20% 90%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .neumorphic-card {
+    background: hsl(var(--card));
+    box-shadow: var(--shadow-neumorphic-dark), var(--shadow-neumorphic-light);
+    border-radius: 1.5rem;
+  }
+
+  .neumorphic-input {
+    background: hsl(var(--surface-sunken));
+    box-shadow: var(--shadow-neumorphic-inset);
+    border: 1px solid hsl(var(--border));
+    transition: all 0.2s ease;
+  }
+
+  .neumorphic-input:focus {
+    box-shadow: var(--shadow-neumorphic-inset), 0 0 0 2px hsl(var(--primary) / 0.3);
+    border-color: hsl(var(--primary) / 0.5);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 30px hsl(var(--glow-primary) / 0.3), 0 0 60px hsl(var(--glow-primary) / 0.1);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(var(--foreground)), hsl(var(--muted-foreground)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}

@@ -417,8 +417,51 @@ const getDashboardStats = asyncHandler(async (req, res) => {
   });
 });
 
+const registerAdmin = asyncHandler(async (req, res) => {
+  const { name, email, password } = req.body;
+
+  const { data: existingAdmin } = await supabase
+    .from('admins')
+    .select('admin_id')
+    .eq('email', email)
+    .single();
+
+  if (existingAdmin) {
+    return res.status(400).json({ error: 'Email already registered' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const { data: admin, error } = await supabase
+    .from('admins')
+    .insert([{
+      name,
+      email,
+      password: hashedPassword
+    }])
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  const token = generateToken(admin.admin_id, 'admin');
+
+  res.status(201).json({
+    message: 'Admin registered successfully',
+    admin: {
+      id: admin.admin_id,
+      name: admin.name,
+      email: admin.email
+    },
+    token
+  });
+});
+
 module.exports = {
   loginAdmin,
+  registerAdmin,
   getAllDoctors,
   createDoctor,
   updateDoctor,

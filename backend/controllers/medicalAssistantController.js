@@ -129,7 +129,7 @@ const parseMedicalResponse = (response) => {
 };
 
 /**
- * Get recommended doctors based on specialty
+ * Get recommended doctors based on specialty with advanced scoring
  * @param {string} specialty - Doctor specialty
  * @returns {Array} - Array of recommended doctors
  */
@@ -138,45 +138,124 @@ const getRecommendedDoctors = async (specialty) => {
     const csvPath = path.join(__dirname, '../doctors_processed_data.csv');
     const csvData = fs.readFileSync(csvPath, 'utf8');
     
+    // Parse CSV properly handling quoted fields
     const lines = csvData.split('\n').filter(line => line.trim());
-    const headers = lines[0].split(',');
+    const headers = parseCSVLine(lines[0]);
     
     const doctors = [];
     
+    // Qualification scoring system
+    const qualificationScores = {
+      'MBBS': 1,
+      'FCPS': 2,
+      'MD': 3,
+      'MS': 2.5,
+      'PHD': 3.5,
+      'BCS': 1.5,
+      'MCPS': 1.8,
+      'CCD': 1.2,
+      'PGT': 1.3,
+      'BDS': 1,
+      'MPH': 1.5
+    };
+    
     for (let i = 1; i < lines.length; i++) {
-      const values = lines[i].split(',');
+      const values = parseCSVLine(lines[i]);
       if (values.length >= headers.length) {
         const doctor = {};
         headers.forEach((header, index) => {
           doctor[header.trim()] = values[index] ? values[index].trim() : '';
         });
         
-        // Match specialty (case-insensitive)
-        if (doctor.Speciality && doctor.Speciality.toLowerCase() === specialty.toLowerCase()) {
+        // Match specialty (case-insensitive, partial match with common variations)
+        const specialtyNormalized = specialty.toLowerCase().trim();
+        const doctorSpecialty = doctor.Speciality ? doctor.Speciality.toLowerCase().trim() : '';
+        
+        // Handle common specialty variations
+        const specialtyMatches = 
+          doctorSpecialty.includes(specialtyNormalized) ||
+          specialtyNormalized.includes(doctorSpecialty) ||
+          (specialtyNormalized.includes('cardio') && doctorSpecialty.includes('cardio')) ||
+          (specialtyNormalized.includes('neuro') && doctorSpecialty.includes('neuro')) ||
+          (specialtyNormalized.includes('medic') && doctorSpecialty.includes('medic')) ||
+          (specialtyNormalized.includes('surge') && doctorSpecialty.includes('surge')) ||
+          (specialtyNormalized.includes('pedia') && doctorSpecialty.includes('pedia')) ||
+          (specialtyNormalized.includes('gynae') && doctorSpecialty.includes('gynae')) ||
+          (specialtyNormalized.includes('ortho') && doctorSpecialty.includes('ortho'));
+        
+        if (doctor.Speciality && specialtyMatches) {
+          
+          // Calculate qualification score
+          let qualificationScore = 0;
+          const education = doctor.Education || '';
+          
+          for (const [qualification, score] of Object.entries(qualificationScores)) {
+            if (education.toLowerCase().includes(qualification.toLowerCase())) {
+              qualificationScore += score;
+            }
+          }
+          
+          // Calculate experience score (normalized)
+          const experience = parseInt(doctor.Experience) || 0;
+          const maxExperience = 50; // Assumed max experience for normalization
+          const normalizedExperience = experience / maxExperience;
+          
+          // Calculate qualification score (normalized)
+          const maxQualificationScore = 10; // Assumed max qualification score
+          const normalizedQualification = Math.min(qualificationScore / maxQualificationScore, 1);
+          
+          // Weighted recommendation score (60% experience, 40% qualification)
+          const recommendationScore = (0.6 * normalizedExperience) + (0.4 * normalizedQualification);
+          
           doctors.push({
             id: doctor['Doctor ID'],
             name: doctor['Doctor Name'],
             education: doctor.Education,
             specialty: doctor.Speciality,
-            experience: doctor.Experience,
+            experience: experience,
             chamber: doctor.Chamber,
             location: doctor.Location,
-            concentration: doctor.Concentration
+            concentration: doctor.Concentration,
+            qualificationScore: qualificationScore,
+            recommendationScore: recommendationScore
           });
         }
       }
     }
     
-    // Sort by experience (descending)
-    doctors.sort((a, b) => parseInt(b.experience) - parseInt(a.experience));
+    // Sort by recommendation score (descending)
+    doctors.sort((a, b) => b.recommendationScore - a.recommendationScore);
     
-    // Return top 3 doctors
-    return doctors.slice(0, 3);
+    // Return top 10 doctors (more options for patients)
+    return doctors.slice(0, 10);
     
   } catch (error) {
     console.error('Error reading doctors CSV:', error);
     return [];
   }
+};
+
+// Helper function to parse CSV lines with quoted fields
+const parseCSVLine = (line) => {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  result.push(current);
+  return result;
 };
 
 module.exports = {
