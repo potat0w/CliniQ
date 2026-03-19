@@ -133,16 +133,39 @@ const bookAppointment = asyncHandler(async (req, res) => {
   const { doctorId, slotId, notes } = req.body;
   const patientId = req.user.userId;
 
-  const { data: slot, error: slotError } = await supabase
-    .from('slots')
-    .select('*')
-    .eq('slot_id', slotId)
-    .eq('doctor_id', doctorId)
-    .eq('status', 'available')
-    .single();
+  // If no slotId provided, create a default slot for voice assistant bookings
+  let targetSlot;
+  if (!slotId) {
+    // Create a temporary slot for voice assistant bookings
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Convert day to number (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+    const dayOfWeek = tomorrow.getDay();
+    
+    targetSlot = {
+      slot_id: `va_${Date.now()}`,
+      doctor_id: doctorId,
+      chamber_id: 1,
+      day_of_week: dayOfWeek,
+      start_time: '09:00',
+      end_time: '10:00',
+      status: 'available'
+    };
+  } else {
+    // Get the specified slot
+    const { data: slot, error: slotError } = await supabase
+      .from('slots')
+      .select('*')
+      .eq('slot_id', slotId)
+      .eq('doctor_id', doctorId)
+      .eq('status', 'available')
+      .single();
 
-  if (slotError || !slot) {
-    return res.status(400).json({ error: 'Time slot not available' });
+    if (slotError || !slot) {
+      return res.status(400).json({ error: 'Time slot not available' });
+    }
+    targetSlot = slot;
   }
 
   // Get patient info for name and phone
@@ -169,10 +192,10 @@ const bookAppointment = asyncHandler(async (req, res) => {
     .insert([{
       appointment_id: newAppointmentId,
       doctor_id: doctorId,
-      chamber_id: slot.chamber_id,
-      day_of_week: slot.day_of_week,
-      start_time: slot.start_time,
-      end_time: slot.end_time,
+      chamber_id: targetSlot.chamber_id,
+      day_of_week: targetSlot.day_of_week,
+      start_time: targetSlot.start_time,
+      end_time: targetSlot.end_time,
       patient_name: patient.name,
       patient_phone: patient.phone,
       status: 'scheduled'
@@ -184,10 +207,13 @@ const bookAppointment = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 
-  await supabase
-    .from('slots')
-    .update({ status: 'booked' })
-    .eq('slot_id', slotId);
+  // Only update slot status if it's a real slot (not voice assistant generated)
+  if (slotId) {
+    await supabase
+      .from('slots')
+      .update({ status: 'booked' })
+      .eq('slot_id', slotId);
+  }
 
   res.status(201).json({
     message: 'Appointment booked successfully',

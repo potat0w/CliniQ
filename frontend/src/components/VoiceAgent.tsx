@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 
 export default function VoiceAgent() {
   const [isRecording, setIsRecording] = useState(false);
@@ -12,10 +12,20 @@ export default function VoiceAgent() {
   const [medicalAnalysis, setMedicalAnalysis] = useState<any>(null);
   const [recommendedDoctors, setRecommendedDoctors] = useState<any[]>([]);
   const [error, setError] = useState<string>("");
+  const [user, setUser] = useState<any>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Check if user is logged in
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    if (userData && token) {
+      setUser(JSON.parse(userData));
+    }
+  }, []);
 
   const startRecording = useCallback(async () => {
     try {
@@ -172,6 +182,40 @@ export default function VoiceAgent() {
     setError("");
   };
 
+  const bookDoctorAppointment = async (doctor: any) => {
+    if (!user) {
+      alert('Please login to book an appointment');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      
+      const response = await fetch('http://localhost:5000/api/patients/appointments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          doctorId: doctor.id,
+          notes: `Booked from voice assistant recommendation for ${medicalAnalysis?.symptom}`
+          // No slotId - backend will create default slot
+        })
+      });
+
+      if (response.ok) {
+        alert(`Appointment booked successfully with Dr. ${doctor.name}!\n\nAppointment scheduled for tomorrow at 9:00 AM.\n\nYou will receive a confirmation with details.`);
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to book appointment');
+      }
+    } catch (error) {
+      console.error('Error booking appointment:', error);
+      alert('Failed to book appointment');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Instructions */}
@@ -319,6 +363,14 @@ export default function VoiceAgent() {
                     <p className="text-gray-300 text-sm">
                       ⭐ Score: {doctor.recommendationScore?.toFixed(2)} | 📅 {doctor.experience} years
                     </p>
+                  </div>
+                  <div className="ml-4">
+                    <button
+                      onClick={() => bookDoctorAppointment(doctor)}
+                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                    >
+                      Book Appointment
+                    </button>
                   </div>
                 </div>
               </div>

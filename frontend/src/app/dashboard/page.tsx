@@ -113,16 +113,38 @@ export default function DashboardPage() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/appointments', {
+      
+      // First get available slots for the selected doctor
+      const slotsResponse = await fetch(`http://localhost:5000/api/patients/doctors/${selectedDoctor.doctor_id}/availability`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (!slotsResponse.ok) {
+        alert('Failed to fetch doctor availability')
+        return
+      }
+
+      const slots = await slotsResponse.json()
+      
+      if (slots.length === 0) {
+        alert('No available slots for this doctor')
+        return
+      }
+
+      // Book the first available slot (simplified for demo)
+      const firstSlot = slots[0]
+      
+      const response = await fetch('http://localhost:5000/api/patients/appointments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          doctor_id: selectedDoctor.doctor_id,
-          appointment_date: bookingData.date,
-          appointment_time: bookingData.time,
+          doctorId: selectedDoctor.doctor_id,
+          slotId: firstSlot.slot_id,
           notes: bookingData.notes
         })
       })
