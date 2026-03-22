@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
 const {
   loginAdmin,
@@ -16,9 +17,13 @@ const {
   updateChamber,
   deleteChamber,
   getAllAppointments,
-  getDashboardStats
+  getDashboardStats,
+  importDoctorsFromCSV
 } = require('../controllers/adminController');
 const { authenticateToken, authorizeRole } = require('../middlewares/authMiddleware');
+
+// Configure multer for file uploads
+const upload = multer({ dest: 'uploads/' });
 
 router.post('/login', loginAdmin);
 router.post('/register', registerAdmin);
@@ -32,6 +37,7 @@ router.get('/doctors', getAllDoctors);
 router.post('/doctors', createDoctor);
 router.put('/doctors/:doctorId', updateDoctor);
 router.delete('/doctors/:doctorId', deleteDoctor);
+router.post('/doctors/import', upload.single('csvFile'), importDoctorsFromCSV);
 
 router.get('/patients', getAllPatients);
 router.get('/patients/:patientId', getPatient);

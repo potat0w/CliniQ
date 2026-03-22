@@ -108,7 +108,7 @@ const getDoctors = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 
-  res.json(doctors);
+  res.json({ doctors });
 });
 
 const getDoctorAvailability = asyncHandler(async (req, res) => {

@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import VoiceAgent from '@/components/VoiceAgent'
+import DoctorList from '@/components/DoctorList'
+import DoctorImport from '@/components/DoctorImport'
 
 interface User {
   id: string
@@ -54,15 +56,21 @@ export default function DashboardPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([])
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'doctors' | 'appointments' | 'voice'>('doctors')
+  const [activeTab, setActiveTab] = useState<'doctors' | 'appointments' | 'voice' | 'import'>('doctors')
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null)
   const [showBookingForm, setShowBookingForm] = useState(false)
+  const [notification, setNotification] = useState<string | null>(null)
   const [bookingData, setBookingData] = useState({
     date: '',
     time: '',
     notes: ''
   })
   const router = useRouter()
+
+  const showNotification = (message: string) => {
+    setNotification(message)
+    setTimeout(() => setNotification(null), 3000)
+  }
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -116,8 +124,8 @@ export default function DashboardPage() {
       
       if (response.ok) {
         const data = await response.json()
-        console.log('Appointments data:', data) // Debug log
-        setAppointments(data || []) // Changed from data.appointments to data
+        console.log('Appointments data:', data)
+        setAppointments(data || [])
       } else {
         const error = await response.json()
         console.error('Error response:', error)
@@ -127,6 +135,11 @@ export default function DashboardPage() {
     }
   }
 
+  const handleBookAppointment = (doctor: Doctor) => {
+    setSelectedDoctor(doctor)
+    setShowBookingForm(true)
+  }
+
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedDoctor) return
@@ -134,7 +147,6 @@ export default function DashboardPage() {
     try {
       const token = localStorage.getItem('token')
       
-      // First get available slots for the selected doctor
       const slotsResponse = await fetch(`http://localhost:5000/api/patients/doctors/${selectedDoctor.doctor_id}/availability`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -142,18 +154,17 @@ export default function DashboardPage() {
       })
 
       if (!slotsResponse.ok) {
-        alert('Failed to fetch doctor availability')
+        showNotification('Failed to fetch doctor availability')
         return
       }
 
       const slots = await slotsResponse.json()
       
       if (slots.length === 0) {
-        alert('No available slots for this doctor')
+        showNotification('No available slots for this doctor')
         return
       }
 
-      // Book the first available slot (simplified for demo)
       const firstSlot = slots[0]
       
       const response = await fetch('http://localhost:5000/api/patients/appointments', {
@@ -174,14 +185,14 @@ export default function DashboardPage() {
         setSelectedDoctor(null)
         setBookingData({ date: '', time: '', notes: '' })
         fetchAppointments()
-        alert('Appointment booked successfully!')
+        showNotification('Appointment booked successfully!')
       } else {
         const error = await response.json()
-        alert(error.error || 'Failed to book appointment')
+        showNotification(error.error || 'Failed to book appointment')
       }
     } catch (error) {
       console.error('Error booking appointment:', error)
-      alert('Failed to book appointment')
+      showNotification('Failed to book appointment')
     }
   }
 
@@ -206,6 +217,12 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
+      {notification && (
+        <div className="fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg z-50">
+          {notification}
+        </div>
+      )}
+      
       <nav className="bg-gray-800 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -289,40 +306,27 @@ export default function DashboardPage() {
               >
                 Voice Assistant
               </button>
+              {user.email === 'admin@pillz.com' && (
+                <button
+                  onClick={() => setActiveTab('import')}
+                  className={`px-6 py-3 text-sm font-medium transition-colors ${
+                    activeTab === 'import'
+                      ? 'text-blue-400 border-b-2 border-blue-400'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  Import Doctors
+                </button>
+              )}
             </div>
           </div>
 
           {/* Tab Content */}
           {activeTab === 'doctors' && (
-            <div className="bg-gray-800 rounded-lg p-6">
-              <h3 className="text-xl font-semibold text-white mb-4">Available Doctors</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {doctors.map((doctor) => (
-                  <div key={doctor.doctor_id} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-                    <h4 className="text-lg font-medium text-white mb-2">{doctor.doctor_name}</h4>
-                    <p className="text-gray-300 mb-1">Speciality: {doctor.speciality}</p>
-                    {doctor.experience && (
-                      <p className="text-gray-300 mb-1">Experience: {doctor.experience} years</p>
-                    )}
-                    {doctor.email && (
-                      <p className="text-gray-300 mb-3">Email: {doctor.email}</p>
-                    )}
-                    <button
-                      onClick={() => {
-                        setSelectedDoctor(doctor)
-                        setShowBookingForm(true)
-                      }}
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                    >
-                      Book Appointment
-                    </button>
-                  </div>
-                ))}
-              </div>
-              {doctors.length === 0 && (
-                <p className="text-gray-400 text-center py-8">No doctors available at the moment.</p>
-              )}
-            </div>
+            <DoctorList 
+              doctors={doctors} 
+              onBookAppointment={handleBookAppointment}
+            />
           )}
 
           {activeTab === 'appointments' && (
@@ -369,6 +373,10 @@ export default function DashboardPage() {
                 <VoiceAgent />
               </div>
             </div>
+          )}
+
+          {activeTab === 'import' && (
+            <DoctorImport onImportComplete={showNotification} />
           )}
         </div>
       </main>
