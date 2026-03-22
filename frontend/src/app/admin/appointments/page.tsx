@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation'
 
 interface Appointment {
   appointment_id: number
-  appointment_date: string
-  start_time: string
-  end_time: string
+  appointment_date: string | null
+  start_time: string | null
+  end_time: string | null
   status: string
   payment_done: boolean
   patients?: {
@@ -29,6 +29,14 @@ export default function AdminAppointmentsPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null)
+  const [editForm, setEditForm] = useState({
+    appointment_date: '',
+    start_time: '',
+    end_time: '',
+    status: '',
+    payment_done: false
+  })
   const router = useRouter()
 
   useEffect(() => {
@@ -87,6 +95,66 @@ export default function AdminAppointmentsPage() {
     }
   }
 
+  const startEdit = (appointment: Appointment) => {
+    setEditingAppointment(appointment)
+    setEditForm({
+      appointment_date: appointment.appointment_date || '',
+      start_time: appointment.start_time || '',
+      end_time: appointment.end_time || '',
+      status: appointment.status || '',
+      payment_done: appointment.payment_done || false
+    })
+  }
+
+  const cancelEdit = () => {
+    setEditingAppointment(null)
+    setEditForm({
+      appointment_date: '',
+      start_time: '',
+      end_time: '',
+      status: '',
+      payment_done: false
+    })
+  }
+
+  const saveEdit = async () => {
+    if (!editingAppointment) return
+
+    try {
+      const token = localStorage.getItem('token')
+      const updateData = {
+        appointment_date: editForm.appointment_date,
+        start_time: editForm.start_time,
+        end_time: editForm.end_time,
+        status: editForm.status,
+        payment_done: editForm.payment_done
+      }
+
+      const response = await fetch(`http://localhost:5000/api/admin/appointments/${editingAppointment.appointment_id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      })
+
+      if (response.ok) {
+        setAppointments(appointments.map(a => 
+          a.appointment_id === editingAppointment.appointment_id 
+            ? { ...a, ...updateData }
+            : a
+        ))
+        cancelEdit()
+      } else {
+        const errorData = await response.json()
+        setError(errorData.error || 'Failed to update appointment')
+      }
+    } catch (error) {
+      setError('Error updating appointment')
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -123,6 +191,94 @@ export default function AdminAppointmentsPage() {
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
               {error}
+              <button 
+                onClick={() => setError('')}
+                className="float-right text-red-700 hover:text-red-900"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {/* Edit Form Modal */}
+          {editingAppointment && (
+            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+              <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+                <h3 className="text-lg font-bold text-gray-900 mb-4">Edit Appointment</h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Date</label>
+                    <input
+                      type="date"
+                      value={editForm.appointment_date}
+                      onChange={(e) => setEditForm({...editForm, appointment_date: e.target.value})}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Start Time</label>
+                    <input
+                      type="time"
+                      value={editForm.start_time}
+                      onChange={(e) => setEditForm({...editForm, start_time: e.target.value})}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">End Time</label>
+                    <input
+                      type="time"
+                      value={editForm.end_time}
+                      onChange={(e) => setEditForm({...editForm, end_time: e.target.value})}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Status</label>
+                    <select
+                      value={editForm.status}
+                      onChange={(e) => setEditForm({...editForm, status: e.target.value})}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="scheduled">Scheduled</option>
+                      <option value="completed">Completed</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="rescheduled">Rescheduled</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={editForm.payment_done}
+                        onChange={(e) => setEditForm({...editForm, payment_done: e.target.checked})}
+                        className="mr-2"
+                      />
+                      Payment Done
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-2 mt-6">
+                  <button
+                    onClick={cancelEdit}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={saveEdit}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -186,7 +342,10 @@ export default function AdminAppointmentsPage() {
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">
+                        <button 
+                          onClick={() => startEdit(appointment)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                        >
                           Edit
                         </button>
                         <button 

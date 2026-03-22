@@ -85,8 +85,8 @@ export default function AdminPatientsPage() {
   const startEdit = (patient: Patient) => {
     setEditingPatient(patient)
     setEditForm({
-      name: patient.name,
-      email: patient.email,
+      name: patient.name || '',
+      email: patient.email || '',
       phone: patient.phone || '',
       age: patient.age?.toString() || '',
       gender: patient.gender || ''

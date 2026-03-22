@@ -87,9 +87,9 @@ export default function AdminDoctorsPage() {
   const startEdit = (doctor: Doctor) => {
     setEditingDoctor(doctor)
     setEditForm({
-      doctor_name: doctor.doctor_name,
-      email: doctor.email,
-      speciality: doctor.speciality,
+      doctor_name: doctor.doctor_name || '',
+      email: doctor.email || '',
+      speciality: doctor.speciality || '',
       experience: doctor.experience?.toString() || '',
       chamber: doctor.chamber || '',
       location: doctor.location || ''
