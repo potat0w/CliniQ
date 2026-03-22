@@ -17,9 +17,16 @@ const {
   updateChamber,
   deleteChamber,
   getAllAppointments,
+  createAppointment,
+  updateAppointment,
+  deleteAppointment,
   getDashboardStats,
   importDoctorsFromCSV,
-  getDoctorsFromCSV
+  getDoctorsFromCSV,
+  getAllAdmins,
+  getAdmin,
+  updateAdmin,
+  deleteAdmin
 } = require('../controllers/adminController');
 const { authenticateToken, authorizeRole } = require('../middlewares/authMiddleware');
 
@@ -52,5 +59,14 @@ router.put('/chambers/:chamberId', updateChamber);
 router.delete('/chambers/:chamberId', deleteChamber);
 
 router.get('/appointments', getAllAppointments);
+router.post('/appointments', createAppointment);
+router.put('/appointments/:appointmentId', updateAppointment);
+router.delete('/appointments/:appointmentId', deleteAppointment);
+
+// Admin management routes
+router.get('/admins', getAllAdmins);
+router.get('/admins/:adminId', getAdmin);
+router.put('/admins/:adminId', updateAdmin);
+router.delete('/admins/:adminId', deleteAdmin);
 
 module.exports = router;

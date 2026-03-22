@@ -46,16 +46,8 @@ const loginAdmin = asyncHandler(async (req, res) => {
 const getAllDoctors = asyncHandler(async (req, res) => {
   const { data: doctors, error } = await supabase
     .from('doctors')
-    .select(`
-      *,
-      chambers (
-        id,
-        name,
-        address,
-        phone
-      )
-    `)
-    .order('created_at', { ascending: false });
+    .select('*')
+    .order('doctor_id', { ascending: false });
 
   if (error) {
     return res.status(400).json({ error: error.message });
@@ -179,7 +171,7 @@ const getAllPatients = asyncHandler(async (req, res) => {
   const { data: patients, error } = await supabase
     .from('patients')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('patient_id', { ascending: false });
 
   if (error) {
     return res.status(400).json({ error: error.message });
@@ -259,15 +251,8 @@ const deletePatient = asyncHandler(async (req, res) => {
 const getAllChambers = asyncHandler(async (req, res) => {
   const { data: chambers, error } = await supabase
     .from('chambers')
-    .select(`
-      *,
-      doctors (
-        id,
-        name,
-        specialty
-      )
-    `)
-    .order('created_at', { ascending: false });
+    .select('*')
+    .order('chamber_id', { ascending: false });
 
   if (error) {
     return res.status(400).json({ error: error.message });
@@ -389,34 +374,39 @@ const getAllAppointments = asyncHandler(async (req, res) => {
 });
 
 const getDashboardStats = asyncHandler(async (req, res) => {
-  const [
-    { count: totalPatients },
-    { count: totalDoctors },
-    { count: totalChambers },
-    { count: todayAppointments },
-    { count: pendingAppointments }
-  ] = await Promise.all([
-    supabase.from('patients').select('id', { count: 'exact' }),
-    supabase.from('doctors').select('id', { count: 'exact' }),
-    supabase.from('chambers').select('id', { count: 'exact' }),
-    supabase
-      .from('appointments')
-      .select('id', { count: 'exact' })
-      .eq('appointment_date', new Date().toISOString().split('T')[0]),
-    supabase
-      .from('appointments')
-      .select('id', { count: 'exact' })
-      .in('status', ['scheduled', 'rescheduled'])
-      .gte('appointment_date', new Date().toISOString().split('T')[0])
-  ]);
+  try {
+    const [
+      { count: totalPatients },
+      { count: totalDoctors },
+      { count: totalChambers },
+      { count: todayAppointments },
+      { count: pendingAppointments }
+    ] = await Promise.all([
+      supabase.from('patients').select('patient_id', { count: 'exact' }),
+      supabase.from('doctors').select('doctor_id', { count: 'exact' }),
+      supabase.from('chambers').select('chamber_id', { count: 'exact' }),
+      supabase
+        .from('appointments')
+        .select('appointment_id', { count: 'exact' })
+        .eq('appointment_date', new Date().toISOString().split('T')[0]),
+      supabase
+        .from('appointments')
+        .select('appointment_id', { count: 'exact' })
+        .in('status', ['scheduled', 'rescheduled'])
+        .gte('appointment_date', new Date().toISOString().split('T')[0])
+    ]);
 
-  res.json({
-    totalPatients: totalPatients || 0,
-    totalDoctors: totalDoctors || 0,
-    totalChambers: totalChambers || 0,
-    todayAppointments: todayAppointments || 0,
-    pendingAppointments: pendingAppointments || 0
-  });
+    res.json({
+      totalPatients: totalPatients || 0,
+      totalDoctors: totalDoctors || 0,
+      totalChambers: totalChambers || 0,
+      todayAppointments: todayAppointments || 0,
+      pendingAppointments: pendingAppointments || 0
+    });
+  } catch (error) {
+    console.error('Dashboard stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch dashboard stats' });
+  }
 });
 
 const registerAdmin = asyncHandler(async (req, res) => {
@@ -615,6 +605,200 @@ const getDoctorsFromCSV = asyncHandler(async (req, res) => {
     });
 });
 
+// Appointment CRUD operations
+const createAppointment = asyncHandler(async (req, res) => {
+  const { patientId, doctorId, chamberId, appointmentDate, startTime, endTime, status, paymentDone } = req.body;
+
+  const { data: appointment, error } = await supabase
+    .from('appointments')
+    .insert([{
+      patient_id: patientId,
+      doctor_id: doctorId,
+      chamber_id: chamberId,
+      appointment_date: appointmentDate,
+      start_time: startTime,
+      end_time: endTime,
+      status: status || 'scheduled',
+      payment_done: paymentDone || false,
+      booking_time: new Date().toISOString()
+    }])
+    .select(`
+      *,
+      patients (
+        patient_id,
+        name,
+        email,
+        phone
+      ),
+      doctors (
+        doctor_id,
+        doctor_name,
+        speciality
+      ),
+      chambers (
+        chamber_id,
+        chamber_name,
+        location
+      )
+    `)
+    .single();
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.status(201).json({
+    message: 'Appointment created successfully',
+    appointment
+  });
+});
+
+const updateAppointment = asyncHandler(async (req, res) => {
+  const { appointmentId } = req.params;
+  const { patientId, doctorId, chamberId, appointmentDate, startTime, endTime, status, paymentDone } = req.body;
+
+  const { data: appointment, error } = await supabase
+    .from('appointments')
+    .update({
+      patient_id: patientId,
+      doctor_id: doctorId,
+      chamber_id: chamberId,
+      appointment_date: appointmentDate,
+      start_time: startTime,
+      end_time: endTime,
+      status,
+      payment_done: paymentDone
+    })
+    .eq('appointment_id', appointmentId)
+    .select(`
+      *,
+      patients (
+        patient_id,
+        name,
+        email,
+        phone
+      ),
+      doctors (
+        doctor_id,
+        doctor_name,
+        speciality
+      ),
+      chambers (
+        chamber_id,
+        chamber_name,
+        location
+      )
+    `)
+    .single();
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.json({
+    message: 'Appointment updated successfully',
+    appointment
+  });
+});
+
+const deleteAppointment = asyncHandler(async (req, res) => {
+  const { appointmentId } = req.params;
+
+  const { error } = await supabase
+    .from('appointments')
+    .delete()
+    .eq('appointment_id', appointmentId);
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.json({ message: 'Appointment deleted successfully' });
+});
+
+// Admin CRUD operations
+const getAllAdmins = asyncHandler(async (req, res) => {
+  const { data: admins, error } = await supabase
+    .from('admins')
+    .select('admin_id, name, email')
+    .order('admin_id', { ascending: false });
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.json(admins);
+});
+
+const getAdmin = asyncHandler(async (req, res) => {
+  const { adminId } = req.params;
+
+  const { data: admin, error } = await supabase
+    .from('admins')
+    .select('admin_id, name, email')
+    .eq('admin_id', adminId)
+    .single();
+
+  if (error || !admin) {
+    return res.status(404).json({ error: 'Admin not found' });
+  }
+
+  res.json(admin);
+});
+
+const updateAdmin = asyncHandler(async (req, res) => {
+  const { adminId } = req.params;
+  const { name, email } = req.body;
+
+  // Check if email is already used by another admin
+  const { data: existingAdmin } = await supabase
+    .from('admins')
+    .select('admin_id')
+    .eq('email', email)
+    .neq('admin_id', adminId)
+    .single();
+
+  if (existingAdmin) {
+    return res.status(400).json({ error: 'Email already registered' });
+  }
+
+  const { data: admin, error } = await supabase
+    .from('admins')
+    .update({ name, email })
+    .eq('admin_id', adminId)
+    .select('admin_id, name, email')
+    .single();
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.json({
+    message: 'Admin updated successfully',
+    admin
+  });
+});
+
+const deleteAdmin = asyncHandler(async (req, res) => {
+  const { adminId } = req.params;
+
+  // Prevent admin from deleting themselves
+  if (adminId == req.user.userId) {
+    return res.status(400).json({ error: 'Cannot delete your own account' });
+  }
+
+  const { error } = await supabase
+    .from('admins')
+    .delete()
+    .eq('admin_id', adminId);
+
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.json({ message: 'Admin deleted successfully' });
+});
+
 module.exports = {
   loginAdmin,
   registerAdmin,
@@ -631,7 +815,14 @@ module.exports = {
   updateChamber,
   deleteChamber,
   getAllAppointments,
+  createAppointment,
+  updateAppointment,
+  deleteAppointment,
   getDashboardStats,
   importDoctorsFromCSV,
-  getDoctorsFromCSV
+  getDoctorsFromCSV,
+  getAllAdmins,
+  getAdmin,
+  updateAdmin,
+  deleteAdmin
 };

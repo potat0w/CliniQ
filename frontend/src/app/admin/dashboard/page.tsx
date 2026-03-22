@@ -9,8 +9,23 @@ interface Admin {
   email: string
 }
 
+interface DashboardStats {
+  totalPatients: number
+  totalDoctors: number
+  totalChambers: number
+  todayAppointments: number
+  pendingAppointments: number
+}
+
 export default function AdminDashboardPage() {
   const [admin, setAdmin] = useState<Admin | null>(null)
+  const [stats, setStats] = useState<DashboardStats>({
+    totalPatients: 0,
+    totalDoctors: 0,
+    totalChambers: 0,
+    todayAppointments: 0,
+    pendingAppointments: 0
+  })
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
@@ -27,6 +42,7 @@ export default function AdminDashboardPage() {
     try {
       const parsedUser = JSON.parse(userData)
       setAdmin(parsedUser)
+      fetchDashboardStats()
     } catch (error) {
       console.error('Error parsing user data:', error)
       router.push('/admin/login')
@@ -34,6 +50,26 @@ export default function AdminDashboardPage() {
       setLoading(false)
     }
   }, [router])
+
+  const fetchDashboardStats = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('http://localhost:5000/api/admin/dashboard/stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setStats(data)
+      } else {
+        console.error('Failed to fetch dashboard stats')
+      }
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error)
+    }
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -98,7 +134,10 @@ export default function AdminDashboardPage() {
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg font-medium text-gray-900">Doctors</h3>
                 <p className="mt-2 text-gray-600">Manage doctors</p>
-                <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                <button 
+                  onClick={() => router.push('/admin/doctors')}
+                  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                >
                   Manage Doctors
                 </button>
               </div>
@@ -108,7 +147,10 @@ export default function AdminDashboardPage() {
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg font-medium text-gray-900">Patients</h3>
                 <p className="mt-2 text-gray-600">View all patients</p>
-                <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                <button 
+                  onClick={() => router.push('/admin/patients')}
+                  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                >
                   View Patients
                 </button>
               </div>
@@ -118,7 +160,10 @@ export default function AdminDashboardPage() {
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg font-medium text-gray-900">Appointments</h3>
                 <p className="mt-2 text-gray-600">Manage appointments</p>
-                <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                <button 
+                  onClick={() => router.push('/admin/appointments')}
+                  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                >
                   View Appointments
                 </button>
               </div>
@@ -128,7 +173,10 @@ export default function AdminDashboardPage() {
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg font-medium text-gray-900">Chambers</h3>
                 <p className="mt-2 text-gray-600">Manage chambers</p>
-                <button className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                <button 
+                  onClick={() => router.push('/admin/chambers')}
+                  className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                >
                   Manage Chambers
                 </button>
               </div>
@@ -140,16 +188,24 @@ export default function AdminDashboardPage() {
               <h3 className="text-lg font-medium text-gray-900 mb-4">System Statistics</h3>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-gray-900">0</div>
+                  <div className="text-2xl font-bold text-gray-900">{stats.totalPatients}</div>
                   <div className="text-sm text-gray-600">Total Patients</div>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-gray-900">0</div>
+                  <div className="text-2xl font-bold text-gray-900">{stats.totalDoctors}</div>
                   <div className="text-sm text-gray-600">Total Doctors</div>
                 </div>
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-gray-900">0</div>
+                  <div className="text-2xl font-bold text-gray-900">{stats.todayAppointments}</div>
                   <div className="text-sm text-gray-600">Today's Appointments</div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900">{stats.totalChambers}</div>
+                  <div className="text-sm text-gray-600">Total Chambers</div>
+                </div>
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="text-2xl font-bold text-gray-900">{stats.pendingAppointments}</div>
+                  <div className="text-sm text-gray-600">Pending Appointments</div>
                 </div>
               </div>
             </div>

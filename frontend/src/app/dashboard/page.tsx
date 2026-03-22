@@ -138,12 +138,52 @@ export default function DashboardPage() {
 
       if (response.ok) {
         const slots = await response.json()
-        setDoctorSlots(slots)
-        const dates = generateAvailableDates(slots)
+        if (slots.length === 0) {
+          // If no slots found in database, create default slots for CSV doctors
+          const defaultSlots = [
+            { day_of_week: 1, start_time: "09:00", end_time: "12:00" }, // Monday
+            { day_of_week: 1, start_time: "14:00", end_time: "17:00" }, // Monday
+            { day_of_week: 3, start_time: "09:00", end_time: "12:00" }, // Wednesday
+            { day_of_week: 3, start_time: "14:00", end_time: "17:00" }, // Wednesday
+            { day_of_week: 5, start_time: "09:00", end_time: "12:00" }, // Friday
+            { day_of_week: 5, start_time: "14:00", end_time: "17:00" }, // Friday
+          ]
+          setDoctorSlots(defaultSlots)
+          const dates = generateAvailableDates(defaultSlots)
+          setAvailableDates(dates)
+        } else {
+          setDoctorSlots(slots)
+          const dates = generateAvailableDates(slots)
+          setAvailableDates(dates)
+        }
+      } else {
+        // If API fails, still provide default slots
+        const defaultSlots = [
+          { day_of_week: 1, start_time: "09:00", end_time: "12:00" }, // Monday
+          { day_of_week: 1, start_time: "14:00", end_time: "17:00" }, // Monday
+          { day_of_week: 3, start_time: "09:00", end_time: "12:00" }, // Wednesday
+          { day_of_week: 3, start_time: "14:00", end_time: "17:00" }, // Wednesday
+          { day_of_week: 5, start_time: "09:00", end_time: "12:00" }, // Friday
+          { day_of_week: 5, start_time: "14:00", end_time: "17:00" }, // Friday
+        ]
+        setDoctorSlots(defaultSlots)
+        const dates = generateAvailableDates(defaultSlots)
         setAvailableDates(dates)
       }
     } catch (error) {
       console.error('Error fetching doctor slots:', error)
+      // Even on error, provide default slots so users can still book
+      const defaultSlots = [
+        { day_of_week: 1, start_time: "09:00", end_time: "12:00" }, // Monday
+        { day_of_week: 1, start_time: "14:00", end_time: "17:00" }, // Monday
+        { day_of_week: 3, start_time: "09:00", end_time: "12:00" }, // Wednesday
+        { day_of_week: 3, start_time: "14:00", end_time: "17:00" }, // Wednesday
+        { day_of_week: 5, start_time: "09:00", end_time: "12:00" }, // Friday
+        { day_of_week: 5, start_time: "14:00", end_time: "17:00" }, // Friday
+      ]
+      setDoctorSlots(defaultSlots)
+      const dates = generateAvailableDates(defaultSlots)
+      setAvailableDates(dates)
     } finally {
       setLoadingSlots(false)
     }

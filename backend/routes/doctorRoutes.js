@@ -10,7 +10,8 @@ const {
   getAvailability,
   updateAvailability,
   deleteAvailability,
-  completeAppointment
+  completeAppointment,
+  getDashboardStats
 } = require('../controllers/doctorController');
 const { authenticateToken, authorizeRole } = require('../middlewares/authMiddleware');
 
@@ -23,6 +24,7 @@ router.use(authorizeRole('doctor'));
 router.get('/appointments/upcoming', getUpcomingAppointments);
 router.get('/appointments/history', getAppointmentHistory);
 router.get('/patients/:patientId/history', getPatientHistory);
+router.get('/dashboard/stats', getDashboardStats);
 router.post('/availability', addAvailability);
 router.get('/availability', getAvailability);
 router.put('/availability/:availabilityId', updateAvailability);
