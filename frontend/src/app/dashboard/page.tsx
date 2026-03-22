@@ -24,13 +24,29 @@ interface Doctor {
 }
 
 interface Appointment {
-  id: string
-  doctor_id: string
-  patient_id: string
-  appointment_date: string
-  appointment_time: string
+  appointment_id: number
+  doctor_id: number
+  chamber_id: number
+  day_of_week: number
+  start_time: string
+  end_time: string
+  booking_time: string
   status: 'scheduled' | 'completed' | 'cancelled'
-  notes?: string
+  payment_done: boolean
+  patient_id: number
+  appointment_date: string | null
+  doctors?: {
+    doctor_id: number
+    doctor_name: string
+    email: string
+    speciality: string
+  }
+  patients?: {
+    patient_id: number
+    name: string
+    phone: string
+    email: string
+  }
 }
 
 export default function DashboardPage() {
@@ -100,7 +116,11 @@ export default function DashboardPage() {
       
       if (response.ok) {
         const data = await response.json()
-        setAppointments(data.appointments || [])
+        console.log('Appointments data:', data) // Debug log
+        setAppointments(data || []) // Changed from data.appointments to data
+      } else {
+        const error = await response.json()
+        console.error('Error response:', error)
       }
     } catch (error) {
       console.error('Error fetching appointments:', error)
@@ -310,16 +330,17 @@ export default function DashboardPage() {
               <h3 className="text-xl font-semibold text-white mb-4">Your Appointments</h3>
               <div className="space-y-4">
                 {appointments.map((appointment) => (
-                  <div key={appointment.id} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
+                  <div key={appointment.appointment_id} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
                     <div className="flex justify-between items-start">
                       <div>
-                        <p className="text-white font-medium">Appointment ID: {appointment.id}</p>
-                        <p className="text-gray-300">Date: {appointment.appointment_date}</p>
-                        <p className="text-gray-300">Time: {appointment.appointment_time}</p>
-                        <p className="text-gray-300">Doctor ID: {appointment.doctor_id}</p>
-                        {appointment.notes && (
-                          <p className="text-gray-300 mt-2">Notes: {appointment.notes}</p>
+                        <p className="text-white font-medium">Appointment ID: {appointment.appointment_id}</p>
+                        <p className="text-gray-300">Booking Date: {new Date(appointment.booking_time).toLocaleDateString()}</p>
+                        <p className="text-gray-300">Time: {appointment.start_time} - {appointment.end_time}</p>
+                        <p className="text-gray-300">Doctor: {appointment.doctors?.doctor_name || `Dr. ID: ${appointment.doctor_id}`}</p>
+                        {appointment.doctors?.speciality && (
+                          <p className="text-gray-300">Speciality: {appointment.doctors.speciality}</p>
                         )}
+                        <p className="text-gray-300">Phone: {appointment.patients?.phone || 'Not available'}</p>
                       </div>
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                         appointment.status === 'scheduled' ? 'bg-blue-600 text-white' :

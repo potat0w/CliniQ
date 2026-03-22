@@ -197,8 +197,7 @@ const bookAppointment = asyncHandler(async (req, res) => {
       day_of_week: targetSlot.day_of_week,
       start_time: targetSlot.start_time,
       end_time: targetSlot.end_time,
-      patient_name: patient.name,
-      patient_phone: patient.phone,
+      patient_id: patientId,
       status: 'scheduled'
     }])
     .select()
@@ -234,15 +233,15 @@ const getAppointments = asyncHandler(async (req, res) => {
         doctor_name,
         email,
         speciality
+      ),
+      patients (
+        patient_id,
+        name,
+        phone,
+        email
       )
     `)
-    .eq('patient_name', (
-      supabase
-        .from('patients')
-        .select('name')
-        .eq('patient_id', patientId)
-        .single()
-    ))
+    .eq('patient_id', patientId)
     .order('booking_time', { ascending: true });
 
   if (error) {
