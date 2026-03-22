@@ -169,6 +169,24 @@ const bookAppointment = asyncHandler(async (req, res) => {
     targetSlot = slot;
   }
 
+  // Generate appointment_date - next occurrence of the slot's day_of_week
+  const today = new Date();
+  const currentDayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const slotDayOfWeek = targetSlot.day_of_week; // Assuming 0 = Sunday, 1 = Monday, etc.
+  
+  // Calculate days until next occurrence of the slot's day
+  let daysUntilSlot = (slotDayOfWeek - currentDayOfWeek + 7) % 7;
+  if (daysUntilSlot === 0) {
+    daysUntilSlot = 7; // If today is the day, pick next week
+  }
+  
+  // Calculate the appointment date
+  const appointmentDate = new Date(today);
+  appointmentDate.setDate(today.getDate() + daysUntilSlot);
+  
+  // Format as YYYY-MM-DD for database
+  const formattedAppointmentDate = appointmentDate.toISOString().split('T')[0];
+
   // Get patient info for name and phone
   const { data: patient, error: patientError } = await supabase
     .from('patients')
@@ -198,7 +216,8 @@ const bookAppointment = asyncHandler(async (req, res) => {
       start_time: targetSlot.start_time,
       end_time: targetSlot.end_time,
       patient_id: patientId,
-      status: 'scheduled'
+      status: 'scheduled',
+      appointment_date: formattedAppointmentDate
     }])
     .select()
     .single();

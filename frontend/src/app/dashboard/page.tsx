@@ -334,7 +334,7 @@ export default function DashboardPage() {
                     <div className="flex justify-between items-start">
                       <div>
                         <p className="text-white font-medium">Appointment ID: {appointment.appointment_id}</p>
-                        <p className="text-gray-300">Booking Date: {new Date(appointment.booking_time).toLocaleDateString()}</p>
+                        <p className="text-gray-300">Date: {appointment.appointment_date || new Date(appointment.booking_time).toLocaleDateString()}</p>
                         <p className="text-gray-300">Time: {appointment.start_time} - {appointment.end_time}</p>
                         <p className="text-gray-300">Doctor: {appointment.doctors?.doctor_name || `Dr. ID: ${appointment.doctor_id}`}</p>
                         {appointment.doctors?.speciality && (
