@@ -1,5 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const csv = require('csv-parser');
+const fs = require('fs');
 const supabase = require('../config/db');
 const { asyncHandler } = require('../middlewares/errorMiddleware');
 
@@ -102,7 +104,7 @@ const getDoctors = asyncHandler(async (req, res) => {
       speciality,
       experience
     `)
-    .eq('email', 'is not', null);
+    .not('email', 'is', null);
 
   if (error) {
     return res.status(400).json({ error: error.message });
@@ -362,10 +364,76 @@ const rescheduleAppointment = asyncHandler(async (req, res) => {
   res.json({ message: 'Appointment rescheduled successfully' });
 });
 
+const getDoctorsFromCSV = asyncHandler(async (req, res) => {
+  const csvFilePath = './doctors_processed_data.csv';
+  
+  if (!fs.existsSync(csvFilePath)) {
+    return res.status(404).json({ error: 'CSV data file not found' });
+  }
+
+  const results = [];
+  
+  fs.createReadStream(csvFilePath)
+    .pipe(csv())
+    .on('data', (data) => {
+      results.push(data);
+    })
+    .on('end', () => {
+      // Remove header row and filter valid entries
+      const doctors = results.filter(doctor => 
+        doctor['Doctor ID'] && 
+        doctor['Doctor Name'] && 
+        doctor['Doctor ID'] !== 'Doctor ID'
+      );
+      
+      res.json({
+        doctors: doctors.map(doctor => ({
+          doctor_id: doctor['Doctor ID'],
+          doctor_name: doctor['Doctor Name'],
+          education: doctor['Education'] ? JSON.parse(doctor['Education']) : [],
+          speciality: doctor['Speciality'],
+          experience: doctor['Experience'] ? parseInt(doctor['Experience']) : null,
+          chamber: doctor['Chamber'],
+          location: doctor['Location'],
+          concentration: doctor['Concentration'] ? JSON.parse(doctor['Concentration']) : [],
+          certifications: {
+            MBBS: doctor['MBBS'] === '1',
+            FCPS: doctor['FCPS'] === '1',
+            BCS: doctor['BCS'] === '1',
+            MD: doctor['MD'] === '1',
+            MS: doctor['MS'] === '1',
+            MCPS: doctor['MCPS'] === '1',
+            CCD: doctor['CCD'] === '1',
+            PGT: doctor['PGT'] === '1',
+            BDS: doctor['BDS'] === '1',
+            MPH: doctor['MPH'] === '1'
+          },
+          specializations: {
+            gynae_problems: doctor['Gynae Problems'] === '1',
+            cardiac_medicine: doctor['Cardiac Medicine'] === '1',
+            general_medicine: doctor['General Medicine'] === '1',
+            aesthetic_medicine: doctor['Aesthetic Medicine'] === '1',
+            adolescent_medicine: doctor['Adolescent Medicine'] === '1',
+            infectious_diseases: doctor['Infectious Diseases'] === '1',
+            geriatric_medicine: doctor['Geriatric Medicine'] === '1',
+            pcos: doctor['Polycystic Ovary Syndrome (Pcos)'] === '1',
+            hormone_disturbances: doctor['Hormone Dirtubances'] === '1',
+            pediatric_health_checkup: doctor['Health Checkup (Pediatric)'] === '1'
+          }
+        })),
+        total: doctors.length
+      });
+    })
+    .on('error', (error) => {
+      res.status(500).json({ error: 'Error reading CSV file' });
+    });
+});
+
 module.exports = {
   registerPatient,
   loginPatient,
   getDoctors,
+  getDoctorsFromCSV,
   getDoctorAvailability,
   bookAppointment,
   getAppointments,

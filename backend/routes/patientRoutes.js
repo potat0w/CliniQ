@@ -4,6 +4,7 @@ const {
   registerPatient,
   loginPatient,
   getDoctors,
+  getDoctorsFromCSV,
   getDoctorAvailability,
   bookAppointment,
   getAppointments,
@@ -19,6 +20,7 @@ router.use(authenticateToken);
 router.use(authorizeRole('patient'));
 
 router.get('/doctors', getDoctors);
+router.get('/doctors/csv', getDoctorsFromCSV);
 router.get('/doctors/:doctorId/availability', getDoctorAvailability);
 router.post('/appointments', bookAppointment);
 router.get('/appointments', getAppointments);

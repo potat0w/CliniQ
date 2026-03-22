@@ -5,6 +5,9 @@ import { useRouter } from 'next/navigation'
 import VoiceAgent from '@/components/VoiceAgent'
 import DoctorList from '@/components/DoctorList'
 import DoctorImport from '@/components/DoctorImport'
+import Papa from 'papaparse'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 
 interface User {
   id: string
@@ -23,6 +26,34 @@ interface Doctor {
   speciality: string
   experience?: number
   chamber_id?: string
+  education?: string[]
+  chamber?: string
+  location?: string
+  concentration?: string[]
+  certifications?: {
+    MBBS: boolean
+    FCPS: boolean
+    BCS: boolean
+    MD: boolean
+    MS: boolean
+    MCPS: boolean
+    CCD: boolean
+    PGT: boolean
+    BDS: boolean
+    MPH: boolean
+  }
+  specializations?: {
+    gynae_problems: boolean
+    cardiac_medicine: boolean
+    general_medicine: boolean
+    aesthetic_medicine: boolean
+    adolescent_medicine: boolean
+    infectious_diseases: boolean
+    geriatric_medicine: boolean
+    pcos: boolean
+    hormone_disturbances: boolean
+    pediatric_health_checkup: boolean
+  }
 }
 
 interface Appointment {
@@ -65,11 +96,70 @@ export default function DashboardPage() {
     time: '',
     notes: ''
   })
+  const [doctorSlots, setDoctorSlots] = useState<any[]>([])
+  const [availableDates, setAvailableDates] = useState<Date[]>([])
+  const [slotsForSelectedDate, setSlotsForSelectedDate] = useState<any[]>([])
+  const [loadingSlots, setLoadingSlots] = useState(false)
   const router = useRouter()
 
   const showNotification = (message: string) => {
     setNotification(message)
     setTimeout(() => setNotification(null), 3000)
+  }
+
+  // Generate next N dates for weekly slots
+  const generateAvailableDates = (slots: any[], daysAhead = 30) => {
+    const today = new Date()
+    const availableDates = []
+
+    for (let i = 0; i <= daysAhead; i++) {
+      const date = new Date()
+      date.setDate(today.getDate() + i)
+      const day = date.getDay() // 0=Sunday, 1=Monday, ...
+      
+      // Check if any slot matches this day
+      if (slots.some(slot => slot.day_of_week === day)) {
+        availableDates.push(new Date(date))
+      }
+    }
+
+    return availableDates
+  }
+
+  const fetchDoctorSlots = async (doctorId: string) => {
+    setLoadingSlots(true)
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch(`http://localhost:5000/api/patients/doctors/${doctorId}/availability`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const slots = await response.json()
+        setDoctorSlots(slots)
+        const dates = generateAvailableDates(slots)
+        setAvailableDates(dates)
+      }
+    } catch (error) {
+      console.error('Error fetching doctor slots:', error)
+    } finally {
+      setLoadingSlots(false)
+    }
+  }
+
+  const handleDateChange = (date: Date | null) => {
+    if (date) {
+      const selectedDay = date.getDay()
+      const slotsForDay = doctorSlots.filter(slot => slot.day_of_week === selectedDay)
+      setSlotsForSelectedDate(slotsForDay)
+      setBookingData({
+        ...bookingData,
+        date: date.toISOString().split('T')[0],
+        time: '' // Reset time when date changes
+      })
+    }
   }
 
   useEffect(() => {
@@ -95,21 +185,86 @@ export default function DashboardPage() {
     }
   }, [router])
 
-  const fetchDoctors = async () => {
+  const parseStringArray = (str: string): string[] => {
+  if (!str) return []
+  try {
+    // Try parsing as JSON first
+    return JSON.parse(str)
+  } catch {
+    // If that fails, it's likely using single quotes, so convert to valid JSON
     try {
-      const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/doctors', {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const converted = str.replace(/'/g, '"')
+      return JSON.parse(converted)
+    } catch {
+      // If still fails, return empty array
+      return []
+    }
+  }
+}
+
+const fetchDoctors = async () => {
+    try {
+      const response = await fetch('/doctors_processed_data.csv')
+      const csvText = await response.text()
+      
+      Papa.parse(csvText, {
+        header: true,
+        complete: (results) => {
+          console.log('Raw CSV data:', results.data)
+          console.log('Total rows:', results.data.length)
+          
+          const doctors = results.data
+            .filter((doctor: any, index: number) => {
+              // Skip header row and ensure we have basic data
+              if (index === 0 && doctor['Doctor ID'] === 'Doctor ID') return false
+              return doctor['Doctor ID'] && doctor['Doctor Name']
+            })
+            .map((doctor: any): Doctor => ({
+              doctor_id: doctor['Doctor ID'],
+              doctor_name: doctor['Doctor Name'],
+              email: `${doctor['Doctor Name'].replace(/[^a-zA-Z\s]/g, '').toLowerCase().replace(/\s+/g, '.')}@hospital.com`,
+              speciality: doctor['Speciality'],
+              experience: doctor['Experience'] ? parseInt(doctor['Experience']) : undefined,
+              chamber: doctor['Chamber'],
+              location: doctor['Location'],
+              education: parseStringArray(doctor['Education']),
+              concentration: parseStringArray(doctor['Concentration']),
+              certifications: {
+                MBBS: doctor['MBBS'] === '1',
+                FCPS: doctor['FCPS'] === '1',
+                BCS: doctor['BCS'] === '1',
+                MD: doctor['MD'] === '1',
+                MS: doctor['MS'] === '1',
+                MCPS: doctor['MCPS'] === '1',
+                CCD: doctor['CCD'] === '1',
+                PGT: doctor['PGT'] === '1',
+                BDS: doctor['BDS'] === '1',
+                MPH: doctor['MPH'] === '1'
+              },
+              specializations: {
+                gynae_problems: doctor['Gynae Problems'] === '1',
+                cardiac_medicine: doctor['Cardiac Medicine'] === '1',
+                general_medicine: doctor['General Medicine'] === '1',
+                aesthetic_medicine: doctor['Aesthetic Medicine'] === '1',
+                adolescent_medicine: doctor['Adolescent Medicine'] === '1',
+                infectious_diseases: doctor['Infectious Diseases'] === '1',
+                geriatric_medicine: doctor['Geriatric Medicine'] === '1',
+                pcos: doctor['Polycystic Ovary Syndrome (Pcos)'] === '1',
+                hormone_disturbances: doctor['Hormone Dirtubances'] === '1',
+                pediatric_health_checkup: doctor['Health Checkup (Pediatric)'] === '1'
+              }
+            }))
+          
+          console.log('Filtered doctors:', doctors.length)
+          console.log('First doctor:', doctors[0])
+          setDoctors(doctors)
+        },
+        error: (error: any) => {
+          console.error('Error parsing CSV:', error)
         }
       })
-      
-      if (response.ok) {
-        const data = await response.json()
-        setDoctors(data.doctors || [])
-      }
     } catch (error) {
-      console.error('Error fetching doctors:', error)
+      console.error('Error fetching CSV:', error)
     }
   }
 
@@ -138,6 +293,11 @@ export default function DashboardPage() {
   const handleBookAppointment = (doctor: Doctor) => {
     setSelectedDoctor(doctor)
     setShowBookingForm(true)
+    setBookingData({ date: '', time: '', notes: '' })
+    setDoctorSlots([])
+    setAvailableDates([])
+    setSlotsForSelectedDate([])
+    fetchDoctorSlots(doctor.doctor_id)
   }
 
   const handleBooking = async (e: React.FormEvent) => {
@@ -390,25 +550,45 @@ export default function DashboardPage() {
             </h3>
             <form onSubmit={handleBooking} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Date</label>
-                <input
-                  type="date"
-                  required
-                  value={bookingData.date}
-                  onChange={(e) => setBookingData({...bookingData, date: e.target.value})}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <label className="block text-sm font-medium text-gray-300 mb-1">Select Date</label>
+                {loadingSlots ? (
+                  <div className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-400">
+                    Loading available dates...
+                  </div>
+                ) : (
+                  <DatePicker
+                    selected={bookingData.date ? new Date(bookingData.date) : null}
+                    onChange={handleDateChange}
+                    includeDates={availableDates}
+                    placeholderText="Select a date"
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    wrapperClassName="w-full"
+                  />
+                )}
+                {availableDates.length === 0 && !loadingSlots && (
+                  <p className="text-gray-400 text-sm mt-1">No available slots in the next 30 days</p>
+                )}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Time</label>
-                <input
-                  type="time"
-                  required
-                  value={bookingData.time}
-                  onChange={(e) => setBookingData({...bookingData, time: e.target.value})}
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              
+              {slotsForSelectedDate.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Select Time</label>
+                  <select
+                    value={bookingData.time}
+                    onChange={(e) => setBookingData({...bookingData, time: e.target.value})}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  >
+                    <option value="">Select a time slot</option>
+                    {slotsForSelectedDate.map((slot, idx) => (
+                      <option key={idx} value={slot.start_time}>
+                        {slot.start_time} - {slot.end_time}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-1">Notes (Optional)</label>
                 <textarea
@@ -422,7 +602,8 @@ export default function DashboardPage() {
               <div className="flex space-x-3">
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
+                  disabled={!bookingData.date || !bookingData.time}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 py-2 rounded-md font-medium transition-colors"
                 >
                   Book Appointment
                 </button>
@@ -432,6 +613,9 @@ export default function DashboardPage() {
                     setShowBookingForm(false)
                     setSelectedDoctor(null)
                     setBookingData({ date: '', time: '', notes: '' })
+                    setDoctorSlots([])
+                    setAvailableDates([])
+                    setSlotsForSelectedDate([])
                   }}
                   className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-md font-medium transition-colors"
                 >

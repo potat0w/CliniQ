@@ -18,7 +18,8 @@ const {
   deleteChamber,
   getAllAppointments,
   getDashboardStats,
-  importDoctorsFromCSV
+  importDoctorsFromCSV,
+  getDoctorsFromCSV
 } = require('../controllers/adminController');
 const { authenticateToken, authorizeRole } = require('../middlewares/authMiddleware');
 
@@ -34,6 +35,7 @@ router.use(authorizeRole('admin'));
 router.get('/dashboard/stats', getDashboardStats);
 
 router.get('/doctors', getAllDoctors);
+router.get('/doctors/csv', getDoctorsFromCSV);
 router.post('/doctors', createDoctor);
 router.put('/doctors/:doctorId', updateDoctor);
 router.delete('/doctors/:doctorId', deleteDoctor);
