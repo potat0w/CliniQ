@@ -343,14 +343,20 @@ const getAllAppointments = asyncHandler(async (req, res) => {
     .select(`
       *,
       patients (
-        id,
+        patient_id,
         name,
+        email,
         phone
       ),
       doctors (
-        id,
-        name,
-        specialty
+        doctor_id,
+        doctor_name,
+        speciality
+      ),
+      chambers (
+        chamber_id,
+        chamber_name,
+        location
       )
     `)
     .order('appointment_date', { ascending: false })
