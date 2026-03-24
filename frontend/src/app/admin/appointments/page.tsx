@@ -157,28 +157,32 @@ export default function AdminAppointmentsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-sm text-muted-foreground">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
+    <div className="min-h-screen bg-background">
+      <nav className="border-b border-zinc-800 bg-zinc-950/85 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between h-14 items-center">
             <div className="flex items-center">
-              <button 
+              <button
+                type="button"
                 onClick={() => router.push('/admin/dashboard')}
-                className="text-blue-600 hover:text-blue-800 mr-4"
+                className="text-primary-bright hover:text-sky-300 mr-3 text-sm"
               >
                 ← Back to Dashboard
               </button>
-              <h1 className="text-xl font-semibold text-gray-900">Manage Appointments</h1>
+              <h1 className="text-lg font-semibold text-foreground">Manage Appointments</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              <button
+                type="button"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1.5 rounded-lg text-sm font-medium shadow-[0_0_20px_-6px_rgba(55,105,163,0.4)]"
+              >
                 Add New Appointment
               </button>
             </div>
@@ -186,63 +190,59 @@ export default function AdminAppointmentsPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="max-w-7xl mx-auto py-5 sm:px-6 lg:px-8">
+        <div className="px-4 py-4 sm:px-0">
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-              <button 
-                onClick={() => setError('')}
-                className="float-right text-red-700 hover:text-red-900"
-              >
+            <div className="bg-destructive/15 border border-destructive/35 text-red-200 px-3 py-2 rounded-lg mb-4 text-sm flex justify-between items-start gap-2">
+              <span>{error}</span>
+              <button type="button" onClick={() => setError('')} className="text-red-200 hover:text-white shrink-0">
                 ×
               </button>
             </div>
           )}
 
-          {/* Edit Form Modal */}
           {editingAppointment && (
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-              <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Edit Appointment</h3>
+            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+              <div className="relative top-20 mx-auto p-5 border border-border w-full max-w-md rounded-xl bg-popover shadow-[0_0_48px_-12px_rgba(55,105,163,0.25)]">
+                <h3 className="text-base font-bold text-foreground mb-3">Edit Appointment</h3>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Date</label>
+                    <label className="block text-xs font-medium text-muted-foreground">Date</label>
                     <input
                       type="date"
                       value={editForm.appointment_date}
                       onChange={(e) => setEditForm({...editForm, appointment_date: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 text-sm text-zinc-100 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 [color-scheme:dark]"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Start Time</label>
+                    <label className="block text-xs font-medium text-muted-foreground">Start Time</label>
                     <input
                       type="time"
                       value={editForm.start_time}
                       onChange={(e) => setEditForm({...editForm, start_time: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 text-sm text-zinc-100 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 [color-scheme:dark]"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">End Time</label>
+                    <label className="block text-xs font-medium text-muted-foreground">End Time</label>
                     <input
                       type="time"
                       value={editForm.end_time}
                       onChange={(e) => setEditForm({...editForm, end_time: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 text-sm text-zinc-100 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 [color-scheme:dark]"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Status</label>
+                    <label className="block text-xs font-medium text-muted-foreground">Status</label>
                     <select
                       value={editForm.status}
                       onChange={(e) => setEditForm({...editForm, status: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full cursor-pointer px-3 py-2 text-sm text-zinc-100 bg-zinc-900 border border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40 [color-scheme:dark]"
                     >
                       <option value="scheduled">Scheduled</option>
                       <option value="completed">Completed</option>
@@ -264,16 +264,18 @@ export default function AdminAppointmentsPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-2 mt-6">
+                <div className="flex justify-end space-x-2 mt-5">
                   <button
+                    type="button"
                     onClick={cancelEdit}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    className="px-3 py-1.5 bg-secondary text-foreground rounded-lg border border-border hover:bg-secondary/80 text-sm"
                   >
                     Cancel
                   </button>
                   <button
+                    type="button"
                     onClick={saveEdit}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm shadow-[0_0_20px_-6px_rgba(55,105,163,0.4)]"
                   >
                     Save Changes
                   </button>
@@ -282,75 +284,86 @@ export default function AdminAppointmentsPage() {
             </div>
           )}
 
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
+          <div className="glass-panel overflow-hidden rounded-xl">
+            <ul className="divide-y divide-border">
               {appointments.map((appointment) => (
                 <li key={appointment.appointment_id}>
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-4">
-                          <h3 className="text-lg font-medium text-gray-900">
+                  <div className="px-4 py-3 sm:px-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-sm font-medium text-foreground">
                             Appointment #{appointment.appointment_id}
                           </h3>
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            appointment.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
-                            appointment.status === 'completed' ? 'bg-green-100 text-green-800' :
-                            appointment.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
+                          <span
+                            className={`px-2 py-0.5 text-xs rounded-full ${
+                              appointment.status === 'scheduled'
+                                ? 'bg-primary/20 text-primary-bright border border-primary-bright/40'
+                                : appointment.status === 'completed'
+                                  ? 'bg-primary/20 text-primary-bright border border-primary-bright/40'
+                                  : appointment.status === 'cancelled'
+                                    ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                                    : 'bg-secondary text-muted-foreground border border-border'
+                            }`}
+                          >
                             {appointment.status}
                           </span>
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            appointment.payment_done ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                          }`}>
+                          <span
+                            className={`px-2 py-0.5 text-xs rounded-full ${
+                              appointment.payment_done
+                                ? 'bg-primary/20 text-primary-bright border border-primary-bright/40'
+                                : 'bg-primary/10 text-primary-bright border border-primary-bright/35'
+                            }`}
+                          >
                             {appointment.payment_done ? 'Paid' : 'Pending'}
                           </span>
                         </div>
-                        
-                        <p className="mt-1 text-sm text-gray-600">
+
+                        <p className="mt-1 text-xs text-muted-foreground">
                           {appointment.appointment_date} • {appointment.start_time} - {appointment.end_time}
                         </p>
-                        
-                        <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+
+                        <div className="mt-2 grid grid-cols-1 md:grid-cols-3 gap-3">
                           {appointment.patients && (
                             <div>
-                              <p className="text-sm font-medium text-gray-700">Patient</p>
-                              <p className="text-sm text-gray-600">{appointment.patients.name}</p>
-                              <p className="text-sm text-gray-600">{appointment.patients.email}</p>
+                              <p className="text-xs font-medium text-muted-foreground">Patient</p>
+                              <p className="text-xs text-foreground">{appointment.patients.name}</p>
+                              <p className="text-xs text-muted-foreground">{appointment.patients.email}</p>
                               {appointment.patients.phone && (
-                                <p className="text-sm text-gray-600">{appointment.patients.phone}</p>
+                                <p className="text-xs text-muted-foreground">{appointment.patients.phone}</p>
                               )}
                             </div>
                           )}
-                          
+
                           {appointment.doctors && (
                             <div>
-                              <p className="text-sm font-medium text-gray-700">Doctor</p>
-                              <p className="text-sm text-gray-600">{appointment.doctors.doctor_name}</p>
-                              <p className="text-sm text-gray-600">{appointment.doctors.speciality}</p>
+                              <p className="text-xs font-medium text-muted-foreground">Doctor</p>
+                              <p className="text-xs text-foreground">{appointment.doctors.doctor_name}</p>
+                              <p className="text-xs text-muted-foreground">{appointment.doctors.speciality}</p>
                             </div>
                           )}
-                          
+
                           {appointment.chambers && (
                             <div>
-                              <p className="text-sm font-medium text-gray-700">Chamber</p>
-                              <p className="text-sm text-gray-600">{appointment.chambers.chamber_name}</p>
-                              <p className="text-sm text-gray-600">{appointment.chambers.location}</p>
+                              <p className="text-xs font-medium text-muted-foreground">Chamber</p>
+                              <p className="text-xs text-foreground">{appointment.chambers.chamber_name}</p>
+                              <p className="text-xs text-muted-foreground">{appointment.chambers.location}</p>
                             </div>
                           )}
                         </div>
                       </div>
-                      <div className="flex space-x-2">
-                        <button 
+                      <div className="flex space-x-2 shrink-0">
+                        <button
+                          type="button"
                           onClick={() => startEdit(appointment)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground px-2.5 py-1 rounded-lg text-xs"
                         >
                           Edit
                         </button>
-                        <button 
+                        <button
+                          type="button"
                           onClick={() => deleteAppointment(appointment.appointment_id)}
-                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                          className="bg-destructive hover:bg-destructive/90 text-white px-2.5 py-1 rounded-lg text-xs"
                         >
                           Delete
                         </button>
@@ -360,10 +373,10 @@ export default function AdminAppointmentsPage() {
                 </li>
               ))}
             </ul>
-            
+
             {appointments.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No appointments found.</p>
+              <div className="text-center py-10">
+                <p className="text-sm text-muted-foreground">No appointments found.</p>
               </div>
             )}
           </div>

@@ -1,26 +1,108 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0b0e14;
+  --foreground: #ffffff;
+  --muted-foreground: #94a3b8;
+  --card: rgba(255, 255, 255, 0.04);
+  --card-foreground: #ffffff;
+  --border: rgba(63, 63, 70, 0.55);
+  --input: rgba(148, 163, 184, 0.18);
+  --primary: #3769a3;
+  --primary-bright: #60a5fa;
+  --primary-foreground: #ffffff;
+  --accent: #3769a3;
+  --accent-soft: rgba(55, 105, 163, 0.15);
+  --secondary: rgba(255, 255, 255, 0.06);
+  --destructive: #ef4444;
+  --ring: rgba(55, 105, 163, 0.45);
+  --popover: #12161f;
+}
+
+html {
+  color-scheme: dark;
+}
+
+select,
+select:focus-visible {
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background-color: var(--popover);
+  color: var(--foreground);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-primary: var(--primary);
+  --color-primary-bright: var(--primary-bright);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-secondary: var(--secondary);
+  --color-destructive: var(--destructive);
+  --color-popover: var(--popover);
+  --font-sans: var(--font-montserrat);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  min-height: 100vh;
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 90% 55% at 50% -15%, rgba(55, 105, 163, 0.16), transparent),
+    radial-gradient(ellipse 70% 45% at 100% 0%, rgba(55, 105, 163, 0.08), transparent),
+    radial-gradient(ellipse 55% 40% at 0% 90%, rgba(55, 105, 163, 0.05), transparent);
+  color: var(--foreground);
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  font-optical-sizing: auto;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.glass-panel {
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  box-shadow: 0 0 40px -16px rgba(55, 105, 163, 0.22);
+}
+
+.react-datepicker {
+  background-color: var(--popover) !important;
+  border: 1px solid var(--border) !important;
+  font-family: inherit !important;
+}
+
+.react-datepicker__header {
+  background-color: var(--secondary) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.react-datepicker__current-month,
+.react-datepicker__day-name,
+.react-datepicker-time__header {
+  color: var(--foreground) !important;
+}
+
+.react-datepicker__day {
+  color: var(--muted-foreground) !important;
+}
+
+.react-datepicker__day:hover {
+  background-color: var(--secondary) !important;
+}
+
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+.react-datepicker__day--disabled {
+  opacity: 0.35 !important;
 }

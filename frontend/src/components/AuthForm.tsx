@@ -20,10 +20,23 @@ const genderOptions = [
   { value: 'other', label: 'Other' },
 ]
 
-const AuthForm = () => {
+const roleToggleInactive =
+  'flex-1 flex items-center justify-center gap-1 h-8 rounded-lg transition-all text-xs bg-zinc-900/50 text-muted-foreground border border-zinc-800/60 hover:bg-zinc-800/50 hover:text-foreground'
+
+const roleToggleActive =
+  'flex-1 flex items-center justify-center gap-1 h-8 rounded-lg transition-all text-xs font-medium border border-primary/60 bg-primary/15 text-foreground shadow-[0_0_20px_-4px_rgba(55,105,163,0.4)]'
+
+const submitBtnClass =
+  'w-full h-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-medium mt-2 text-xs transition-all hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_24px_-6px_rgba(55,105,163,0.4)]'
+
+type AuthFormProps = {
+  initialMode?: AuthMode
+}
+
+const AuthForm = ({ initialMode = 'signup' }: AuthFormProps) => {
   const router = useRouter()
   const [role, setRole] = useState<UserRole>('patient')
-  const [mode, setMode] = useState<AuthMode>('signup')
+  const [mode, setMode] = useState<AuthMode>(initialMode)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -142,27 +155,29 @@ const AuthForm = () => {
   return (
     <div className="w-full max-w-sm mx-auto">
       <div className="mb-3">
-        <div className="flex items-center gap-1.5 text-blue-400 mb-1">
-          {React.createElement(roleConfig[role].icon, { className: "w-4 h-4" })}
-          <span className="text-xs font-medium text-gray-300">{roleConfig[role].label}</span>
+        <div className="flex items-center gap-1.5 mb-1">
+          {React.createElement(roleConfig[role].icon, {
+            className: 'w-4 h-4 text-primary-bright',
+          })}
+          <span className="text-xs font-medium text-zinc-200">{roleConfig[role].label}</span>
         </div>
-        <h1 className="text-lg font-semibold text-white">
+        <h1 className="text-lg font-semibold text-zinc-50 tracking-tight">
           {mode === 'signup' ? 'Create a new account' : 'Welcome back'}
         </h1>
       </div>
 
-      {/* Auth Mode Tabs */}
-      <div className="flex gap-4 mb-3 border-b border-gray-700">
+      <div className="flex gap-4 mb-3 border-b border-zinc-800/60">
         {(['login', 'signup'] as AuthMode[]).map((m) => (
           <button
             key={m}
+            type="button"
             onClick={() => setMode(m)}
             className={`pb-1.5 text-xs font-medium transition-colors relative capitalize ${
-              mode === m ? 'text-white' : 'text-gray-400 hover:text-white'
+              mode === m ? 'text-foreground' : 'text-muted-foreground hover:text-zinc-300'
             }`}
           >
             {m}
-            {mode === m && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400" />}
+            {mode === m && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary-bright" />}
           </button>
         ))}
       </div>
@@ -170,7 +185,7 @@ const AuthForm = () => {
       <form onSubmit={handleSubmit} className="space-y-2.5">
         {/* Role Toggle */}
         <div className="space-y-1">
-          <label className="text-xs text-gray-400">I am a:</label>
+          <label className="text-xs text-zinc-400">I am a:</label>
           <div className="flex gap-1.5">
             {(Object.keys(roleConfig) as UserRole[]).map((r) => {
               const Icon = roleConfig[r].icon
@@ -179,11 +194,9 @@ const AuthForm = () => {
                   key={r}
                   type="button"
                   onClick={() => setRole(r)}
-                  className={`flex-1 flex items-center justify-center gap-1 h-8 rounded-lg transition-all text-xs bg-gray-800 text-gray-300 border border-gray-600 hover:bg-gray-700 hover:text-white ${
-                    role === r ? 'bg-blue-600 text-white border-blue-500' : ''
-                  }`}
+                  className={role === r ? roleToggleActive : roleToggleInactive}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className={`w-3.5 h-3.5 ${role === r ? '' : 'opacity-80'}`} />
                   <span className="font-medium">{roleConfig[r].label}</span>
                 </button>
               )
@@ -217,11 +230,11 @@ const AuthForm = () => {
             <div className="grid grid-cols-2 gap-2">
               <AuthInput label="Age" type="number" placeholder="25" value={formData.age} onChange={update('age')} />
               <div>
-                <label className="text-xs text-gray-400">Gender</label>
+                <label className="text-xs text-muted-foreground">Gender</label>
                 <select
                   value={formData.gender}
                   onChange={update('gender')}
-                  className="flex h-9 w-full rounded-lg px-3 py-2 text-sm text-gray-900 bg-gray-800 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="flex h-9 w-full rounded-lg px-3 py-2 text-sm text-foreground bg-zinc-900/60 border border-zinc-800/60 focus:outline-none focus:ring-2 focus:ring-primary/40"
                 >
                   {genderOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -235,7 +248,7 @@ const AuthForm = () => {
         )}
 
         {error && (
-          <div className="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded-lg">
+          <div className="bg-destructive/15 border border-destructive/40 text-red-200 px-4 py-3 rounded-lg text-sm">
             {error}
           </div>
         )}
@@ -243,17 +256,27 @@ const AuthForm = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full h-8 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium mt-2 text-xs transition-all hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
+          className={submitBtnClass}
         >
           {loading ? 'Please wait...' : mode === 'signup' ? 'Create Account' : 'Sign In'}
         </button>
       </form>
 
-      <p className="text-center text-[11px] text-gray-400 mt-3">
+      <p className="text-center text-[11px] text-zinc-500 mt-3">
         {mode === 'signup' ? (
-          <>Already have an account? <button onClick={() => setMode('login')} className="text-blue-400 hover:text-blue-300">Sign in</button></>
+          <>
+            Already have an account?{' '}
+            <button type="button" onClick={() => setMode('login')} className="text-primary-bright hover:text-sky-300">
+              Sign in
+            </button>
+          </>
         ) : (
-          <>Don't have an account? <button onClick={() => setMode('signup')} className="text-blue-400 hover:text-blue-300">Sign up</button></>
+          <>
+            Don&apos;t have an account?{' '}
+            <button type="button" onClick={() => setMode('signup')} className="text-primary-bright hover:text-sky-300">
+              Sign up
+            </button>
+          </>
         )}
       </p>
     </div>

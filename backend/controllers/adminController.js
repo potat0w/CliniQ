@@ -83,15 +83,7 @@ const createDoctor = asyncHandler(async (req, res) => {
       chamber_id: chamberId,
       is_active: true
     }])
-    .select(`
-      *,
-      chambers (
-        id,
-        name,
-        address,
-        phone
-      )
-    `)
+    .select('*')
     .single();
 
   if (error) {
@@ -110,9 +102,9 @@ const updateDoctor = asyncHandler(async (req, res) => {
 
   const { data: existingDoctor } = await supabase
     .from('doctors')
-    .select('id')
+    .select('doctor_id')
     .eq('email', email)
-    .neq('id', doctorId)
+    .neq('doctor_id', doctorId)
     .single();
 
   if (existingDoctor) {
@@ -130,16 +122,8 @@ const updateDoctor = asyncHandler(async (req, res) => {
       chamber_id: chamberId,
       is_active: isActive
     })
-    .eq('id', doctorId)
-    .select(`
-      *,
-      chambers (
-        id,
-        name,
-        address,
-        phone
-      )
-    `)
+    .eq('doctor_id', doctorId)
+    .select('*')
     .single();
 
   if (error) {
@@ -158,7 +142,7 @@ const deleteDoctor = asyncHandler(async (req, res) => {
   const { error } = await supabase
     .from('doctors')
     .delete()
-    .eq('id', doctorId);
+    .eq('doctor_id', doctorId);
 
   if (error) {
     return res.status(400).json({ error: error.message });

@@ -64,11 +64,11 @@ export default function DoctorSignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-background py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-            <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="mx-auto w-16 h-16 bg-primary/15 rounded-full flex items-center justify-center mb-4">
+            <svg className="w-8 h-8 text-primary-bright" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
             </svg>
           </div>
@@ -77,7 +77,7 @@ export default function DoctorSignupPage() {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
-            <Link href="/doctor/login" className="font-medium text-green-600 hover:text-green-500">
+            <Link href="/doctor/login" className="font-medium text-primary-bright hover:text-sky-300">
               sign in to your existing doctor account
             </Link>
           </p>
@@ -99,7 +99,7 @@ export default function DoctorSignupPage() {
                 name="name"
                 type="text"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 placeholder="Dr. John Smith"
                 value={formData.name}
                 onChange={handleChange}
@@ -116,7 +116,7 @@ export default function DoctorSignupPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 placeholder="doctor@example.com"
                 value={formData.email}
                 onChange={handleChange}
@@ -132,7 +132,7 @@ export default function DoctorSignupPage() {
                 name="password"
                 type="password"
                 required
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
@@ -147,7 +147,7 @@ export default function DoctorSignupPage() {
                 id="phone"
                 name="phone"
                 type="tel"
-                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 placeholder="+1 (555) 123-4567"
                 value={formData.phone}
                 onChange={handleChange}
@@ -162,7 +162,7 @@ export default function DoctorSignupPage() {
                 id="specialization"
                 name="specialization"
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 value={formData.specialization}
                 onChange={handleChange}
               >
@@ -191,7 +191,7 @@ export default function DoctorSignupPage() {
                   type="number"
                   min="0"
                   max="50"
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                   placeholder="5"
                   value={formData.experience}
                   onChange={handleChange}
@@ -206,7 +206,7 @@ export default function DoctorSignupPage() {
                   id="licenseNumber"
                   name="licenseNumber"
                   type="text"
-                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm"
+                  className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                   placeholder="MD123456"
                   value={formData.licenseNumber}
                   onChange={handleChange}
@@ -215,13 +215,13 @@ export default function DoctorSignupPage() {
             </div>
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-md p-4">
+          <div className="bg-primary/10 border border-primary/25 rounded-md p-4">
             <div className="flex">
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-green-800">
+                <h3 className="text-sm font-medium text-primary-bright">
                   Doctor Verification
                 </h3>
-                <div className="mt-2 text-sm text-green-700">
+                <div className="mt-2 text-sm text-muted-foreground">
                   <p>
                     Your medical license and credentials will be verified before account activation.
                   </p>
@@ -234,7 +234,7 @@ export default function DoctorSignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? 'Creating account...' : 'Create Doctor Account'}
             </button>
@@ -250,7 +250,7 @@ export default function DoctorSignupPage() {
             Admin Signup
           </Link>
           {' | '}
-          <Link href="/signup" className="text-sm text-blue-600 hover:text-blue-900">
+          <Link href="/signup" className="text-sm text-primary-bright hover:text-sky-300">
             Patient Signup
           </Link>
         </div>

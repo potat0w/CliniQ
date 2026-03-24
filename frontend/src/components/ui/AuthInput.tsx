@@ -21,12 +21,12 @@ const AuthInput = React.forwardRef<HTMLInputElement, AuthInputProps>(
 
     return (
       <div className="space-y-1">
-        <label className="text-xs text-gray-600">{label}</label>
+        <label className="text-xs text-muted-foreground">{label}</label>
         <div className="relative">
           <input
             type={inputType}
             className={cn(
-              "flex h-9 w-full rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-500 bg-white shadow-sm border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:cursor-not-allowed disabled:opacity-50",
+              "flex h-9 w-full rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-zinc-500 bg-zinc-900/60 border border-zinc-800/60 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-zinc-600/50 disabled:cursor-not-allowed disabled:opacity-50",
               className
             )}
             ref={ref}
@@ -36,7 +36,7 @@ const AuthInput = React.forwardRef<HTMLInputElement, AuthInputProps>(
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
             >
               {showPassword ? (
                 <EyeOff className="h-4 w-4" />

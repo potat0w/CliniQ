@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation'
 import { AdminDashboardHeader } from '@/components/admin/dashboard/AdminDashboardHeader'
 import { DashboardStatsGrid } from '@/components/admin/dashboard/DashboardStatsGrid'
 import { QuickActions } from '@/components/admin/dashboard/QuickActions'
+import { AppointmentStatus } from '@/components/admin/dashboard/AppointmentStatus'
+import { WeeklyChart } from '@/components/admin/dashboard/WeeklyChart'
 import type { Admin, DashboardStats } from '@/components/admin/dashboard/types'
+import '@/styles/admin-theme.css'
 
 export default function AdminDashboardPage() {
   const [admin, setAdmin] = useState<Admin | null>(null)
@@ -76,8 +79,10 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="admin-dashboard-body">
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-lg">Loading...</div>
+        </div>
       </div>
     )
   }
@@ -87,18 +92,31 @@ export default function AdminDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="admin-dashboard-body">
       <AdminDashboardHeader admin={admin} onLogout={handleLogout} />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Welcome back, {admin.name}!</h2>
-          <p className="text-gray-600">Here's what's happening with your medical practice today.</p>
+      <div className="admin-wrapper">
+        {/* HERO */}
+        <div className="admin-hero">
+          <div className="admin-hero-label">Overview</div>
+          <h2>Welcome back, Admin 👋</h2>
+          <p>Here's what's happening with your medical practice today.</p>
         </div>
 
+        {/* STATS */}
         <DashboardStatsGrid stats={stats} />
+
+        {/* QUICK ACTIONS */}
         <QuickActions />
-      </main>
+
+        <div className="admin-divider"></div>
+
+        {/* BOTTOM ROW */}
+        <div className="admin-bottom-row">
+          <AppointmentStatus />
+          <WeeklyChart />
+        </div>
+      </div>
     </div>
   )
 }

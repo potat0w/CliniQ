@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
+import { Mic, MapPin, GraduationCap, Microscope } from 'lucide-react';
 
 interface TranscriptionResult {
   text: string;
@@ -185,16 +186,17 @@ export default function VoiceRecorder() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div className="min-h-screen bg-background p-4">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="glass-panel rounded-2xl p-6 max-w-3xl mx-auto">
           <h1 className="text-4xl font-bold text-gray-800 mb-2 text-center">
             Medical Assistant AI
           </h1>
-          <p className="text-gray-600 text-center mb-4">
-            🎤 Please describe your condition clearly:
+          <p className="text-muted-foreground text-center mb-4 flex items-center justify-center gap-2 text-sm">
+            <Mic className="w-5 h-5 text-primary-bright shrink-0" aria-hidden />
+            <span>Please describe your condition clearly:</span>
           </p>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 text-center">
+          <div className="bg-primary/10 border border-primary/25 rounded-lg p-4 mb-5 text-center">
             <p className="text-sm text-gray-700 mb-2">
               <strong>What problem are you facing?</strong>
             </p>
@@ -204,7 +206,7 @@ export default function VoiceRecorder() {
             <p className="text-sm text-gray-700">
               <strong>How severe is it?</strong> (mild / moderate / severe)
             </p>
-            <div className="mt-3 p-2 bg-white rounded border border-blue-300">
+            <div className="mt-3 p-2 bg-secondary/80 rounded-lg border border-border">
               <p className="text-xs text-gray-600 italic">
                 Example: "I have chest pain for 10 days, it's mild."
               </p>
@@ -226,7 +228,7 @@ export default function VoiceRecorder() {
               
               {isUploading && (
                 <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
                   <span className="text-lg font-medium text-gray-700">
                     Transcribing audio...
                   </span>
@@ -235,7 +237,7 @@ export default function VoiceRecorder() {
               
               {isAnalyzing && (
                 <div className="flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
                   <span className="text-lg font-medium text-gray-700">
                     Analyzing symptoms...
                   </span>
@@ -259,7 +261,7 @@ export default function VoiceRecorder() {
             {isRecording && (
               <button
                 onClick={stopRecording}
-                className="w-24 h-24 bg-gray-800 hover:bg-gray-900 text-white rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                className="w-24 h-24 bg-secondary hover:bg-secondary/80 text-foreground border border-border rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
               >
                 <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd"/>
@@ -278,7 +280,7 @@ export default function VoiceRecorder() {
             {(transcription || error) && !isUploading && !isAnalyzing && (
               <button
                 onClick={resetRecording}
-                className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
+                className="px-5 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors duration-200 shadow-[0_0_24px_-6px_rgba(55,105,163,0.4)]"
               >
                 New Recording
               </button>
@@ -287,7 +289,7 @@ export default function VoiceRecorder() {
           
           {/* Error Display */}
           {error && (
-            <div className="mt-8 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="mt-6 p-3 bg-destructive/15 border border-destructive/35 rounded-lg">
               <div className="flex items-start">
                 <svg className="w-5 h-5 text-red-500 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
@@ -303,12 +305,12 @@ export default function VoiceRecorder() {
           {/* Medical Analysis Result */}
           {medicalAnalysis && (
             <div className="mt-8 space-y-4">
-              <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="p-4 bg-primary/10 border border-primary/25 rounded-lg">
                 <div className="flex items-start justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-blue-800">Analysis Results</h3>
+                  <h3 className="text-lg font-semibold text-primary-bright">Analysis Results</h3>
                   <div className="flex items-center space-x-2">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm text-blue-600">AI Analysis</span>
+                    <div className="w-3 h-3 bg-primary-bright rounded-full"></div>
+                    <span className="text-sm text-primary-bright">AI Analysis</span>
                   </div>
                 </div>
                 
@@ -330,32 +332,40 @@ export default function VoiceRecorder() {
                   
                   <div>
                     <h4 className="font-medium text-gray-700 mb-1">Recommended Doctor:</h4>
-                    <p className="text-gray-800 font-medium text-blue-600">{medicalAnalysis.doctor}</p>
+                    <p className="text-gray-800 font-medium text-primary-bright">{medicalAnalysis.doctor}</p>
                   </div>
                 </div>
               </div>
               
               {/* Recommended Doctors */}
               {recommendedDoctors.length > 0 && (
-                <div className="p-6 bg-green-50 border border-green-200 rounded-lg">
-                  <h3 className="text-lg font-semibold text-green-800 mb-4">
+                <div className="p-4 bg-primary/10 border border-primary/25 rounded-lg">
+                  <h3 className="text-lg font-semibold text-primary-bright mb-4">
                     Recommended Doctor Type: {medicalAnalysis.doctor}
                   </h3>
                   <h4 className="font-medium text-gray-700 mb-3">Top Doctors:</h4>
                   <div className="space-y-3">
                     {recommendedDoctors.map((doctor, index) => (
-                      <div key={doctor.id} className="bg-white p-4 rounded-lg border border-green-300">
+                      <div key={doctor.id} className="bg-secondary/50 p-3 rounded-lg border border-border">
                         <div className="flex items-start justify-between">
                           <div>
                             <p className="font-medium text-gray-800">
                               {index + 1}. {doctor.name} – {doctor.experience} years – {doctor.chamber}
                             </p>
-                            <p className="text-sm text-gray-600 mt-1">
-                              📍 {doctor.location} | 🎓 {doctor.education}
+                            <p className="text-sm text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
+                              <span className="inline-flex items-center gap-1">
+                                <MapPin className="w-3.5 h-3.5 shrink-0" aria-hidden />
+                                {doctor.location}
+                              </span>
+                              <span className="inline-flex items-center gap-1">
+                                <GraduationCap className="w-3.5 h-3.5 shrink-0" aria-hidden />
+                                {doctor.education}
+                              </span>
                             </p>
                             {doctor.concentration && (
-                              <p className="text-sm text-gray-600">
-                                🔬 {doctor.concentration}
+                              <p className="text-sm text-muted-foreground flex items-start gap-1 mt-1">
+                                <Microscope className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden />
+                                <span>{doctor.concentration}</span>
                               </p>
                             )}
                           </div>
@@ -371,10 +381,10 @@ export default function VoiceRecorder() {
           {/* Transcription Result */}
           {transcription && (
             <div className="mt-8 space-y-4">
-              <div className="p-6 bg-green-50 border border-green-200 rounded-lg">
+              <div className="p-4 bg-primary/10 border border-primary/25 rounded-lg">
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="text-lg font-semibold text-green-800">Transcription Result</h3>
-                  <div className="flex items-center space-x-2 text-sm text-green-600">
+                  <h3 className="text-lg font-semibold text-primary-bright">Transcription Result</h3>
+                  <div className="flex items-center space-x-2 text-sm text-primary-bright">
                     <span>Confidence:</span>
                     <span className="font-medium">{Math.round(transcription.confidence * 100)}%</span>
                   </div>
@@ -389,13 +399,13 @@ export default function VoiceRecorder() {
               
               {/* Word-level timestamps (optional) */}
               {transcription.words && transcription.words.length > 0 && (
-                <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <div className="p-3 bg-secondary/50 border border-border rounded-lg">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Word Details</h4>
                   <div className="flex flex-wrap gap-2">
                     {transcription.words.map((word, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1 bg-white border border-gray-300 rounded text-xs"
+                        className="px-2 py-1 bg-secondary border border-border rounded text-xs text-foreground"
                         title={`Confidence: ${Math.round(word.confidence * 100)}%`}
                       >
                         {word.word}
@@ -410,9 +420,9 @@ export default function VoiceRecorder() {
         
         {/* Features */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+          <div className="glass-panel p-4 rounded-xl text-center">
+            <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-primary-bright" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clipRule="evenodd"/>
               </svg>
             </div>
@@ -420,9 +430,9 @@ export default function VoiceRecorder() {
             <p className="text-sm text-gray-600 mt-1">Crystal clear audio recording</p>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+          <div className="glass-panel p-4 rounded-xl text-center">
+            <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-primary-bright" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 01-1.414-1.414L7.586 10 5.293 7.707a1 1 0 010-1.414zM11 12a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd"/>
               </svg>
             </div>
@@ -430,9 +440,9 @@ export default function VoiceRecorder() {
             <p className="text-sm text-gray-600 mt-1">Intelligent medical symptom analysis</p>
           </div>
           
-          <div className="bg-white p-6 rounded-lg shadow-md text-center">
-            <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+          <div className="glass-panel p-4 rounded-xl text-center">
+            <div className="w-12 h-12 bg-primary/15 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg className="w-6 h-6 text-primary-bright" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
                 <path fillRule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a2 2 0 100 4h2a2 2 0 100-4h-.5a1 1 0 000-2H8a2 2 0 012-2h2a2 2 0 012 2v9a2 2 0 01-2 2H6a2 2 0 01-2-2V5z" clipRule="evenodd"/>
               </svg>

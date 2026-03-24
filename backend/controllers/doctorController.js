@@ -347,11 +347,11 @@ const completeAppointment = asyncHandler(async (req, res) => {
 
 const getDashboardStats = asyncHandler(async (req, res) => {
   try {
-    console.log('🔍 Dashboard stats requested for doctor:', req.user.userId);
+    console.log('Dashboard stats requested for doctor:', req.user.userId);
     const doctorId = req.user.userId;
     const today = new Date().toISOString().split('T')[0];
 
-    console.log('📅 Today date:', today);
+    console.log('Today date:', today);
 
     // Get upcoming appointments with full details
     const { data: upcomingAppointments, error: upcomingError } = await supabase
@@ -389,8 +389,8 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       .order('appointment_date', { ascending: true })
       .order('start_time', { ascending: true });
 
-    console.log('📋 Upcoming appointments error:', upcomingError);
-    console.log('📋 Upcoming appointments count:', upcomingAppointments?.length || 0);
+    console.log('Upcoming appointments error:', upcomingError);
+    console.log('Upcoming appointments count:', upcomingAppointments?.length || 0);
 
     // Get unique patients with their details
     const { data: uniquePatients, error: patientsError } = await supabase
@@ -409,11 +409,11 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       .eq('doctor_id', doctorId)
       .not('patient_id', 'is', null);
 
-    console.log('👥 Patients error:', patientsError);
-    console.log('👥 Patients count:', uniquePatients?.length || 0);
+    console.log('Patients error:', patientsError);
+    console.log('Patients count:', uniquePatients?.length || 0);
 
     if (upcomingError || patientsError) {
-      console.error('❌ Database error:', { upcomingError, patientsError });
+      console.error('Database error:', { upcomingError, patientsError });
       return res.status(400).json({ error: 'Error fetching dashboard data' });
     }
 
@@ -434,10 +434,10 @@ const getDashboardStats = asyncHandler(async (req, res) => {
       appointments: upcomingAppointments || []
     };
 
-    console.log('✅ Dashboard result:', result);
+    console.log('Dashboard result:', result);
     res.json(result);
   } catch (error) {
-    console.error('❌ Dashboard controller error:', error);
+    console.error('Dashboard controller error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

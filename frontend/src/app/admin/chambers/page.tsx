@@ -140,28 +140,32 @@ export default function AdminChambersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-sm text-muted-foreground">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow">
+    <div className="min-h-screen bg-background">
+      <nav className="border-b border-zinc-800 bg-zinc-950/85 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+          <div className="flex justify-between h-14 items-center">
             <div className="flex items-center">
-              <button 
+              <button
+                type="button"
                 onClick={() => router.push('/admin/dashboard')}
-                className="text-blue-600 hover:text-blue-800 mr-4"
+                className="text-primary-bright hover:text-sky-300 mr-3 text-sm"
               >
                 ← Back to Dashboard
               </button>
-              <h1 className="text-xl font-semibold text-gray-900">Manage Chambers</h1>
+              <h1 className="text-lg font-semibold text-foreground">Manage Chambers</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              <button
+                type="button"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1.5 rounded-lg text-sm font-medium shadow-[0_0_20px_-6px_rgba(55,105,163,0.4)]"
+              >
                 Add New Chamber
               </button>
             </div>
@@ -169,78 +173,76 @@ export default function AdminChambersPage() {
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="max-w-7xl mx-auto py-5 sm:px-6 lg:px-8">
+        <div className="px-4 py-4 sm:px-0">
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-              <button 
-                onClick={() => setError('')}
-                className="float-right text-red-700 hover:text-red-900"
-              >
+            <div className="bg-destructive/15 border border-destructive/35 text-red-200 px-3 py-2 rounded-lg mb-4 text-sm flex justify-between items-start gap-2">
+              <span>{error}</span>
+              <button type="button" onClick={() => setError('')} className="text-red-200 hover:text-white shrink-0">
                 ×
               </button>
             </div>
           )}
 
-          {/* Edit Form Modal */}
           {editingChamber && (
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-              <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Edit Chamber</h3>
+            <div className="fixed inset-0 bg-background/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+              <div className="relative top-20 mx-auto p-5 border border-border w-full max-w-md rounded-xl bg-popover shadow-[0_0_48px_-12px_rgba(55,105,163,0.25)]">
+                <h3 className="text-base font-bold text-foreground mb-3">Edit Chamber</h3>
                 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Chamber Name</label>
+                    <label className="block text-xs font-medium text-muted-foreground">Chamber Name</label>
                     <input
                       type="text"
                       value={editForm.chamber_name}
                       onChange={(e) => setEditForm({...editForm, chamber_name: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 text-sm text-foreground bg-secondary/80 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Location</label>
+                    <label className="block text-xs font-medium text-muted-foreground">Location</label>
                     <input
                       type="text"
                       value={editForm.location}
                       onChange={(e) => setEditForm({...editForm, location: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 text-sm text-foreground bg-secondary/80 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">District</label>
+                    <label className="block text-xs font-medium text-muted-foreground">District</label>
                     <input
                       type="text"
                       value={editForm.district}
                       onChange={(e) => setEditForm({...editForm, district: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 text-sm text-foreground bg-secondary/80 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Doctor ID</label>
+                    <label className="block text-xs font-medium text-muted-foreground">Doctor ID</label>
                     <input
                       type="number"
                       value={editForm.doctor_id}
                       onChange={(e) => setEditForm({...editForm, doctor_id: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      className="mt-1 block w-full px-3 py-2 text-sm text-foreground bg-secondary/80 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/40"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-2 mt-6">
+                <div className="flex justify-end space-x-2 mt-5">
                   <button
+                    type="button"
                     onClick={cancelEdit}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                    className="px-3 py-1.5 bg-secondary text-foreground rounded-lg border border-border hover:bg-secondary/80 text-sm"
                   >
                     Cancel
                   </button>
                   <button
+                    type="button"
                     onClick={saveEdit}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 text-sm shadow-[0_0_20px_-6px_rgba(55,105,163,0.4)]"
                   >
                     Save Changes
                   </button>
@@ -249,28 +251,30 @@ export default function AdminChambersPage() {
             </div>
           )}
 
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
+          <div className="glass-panel overflow-hidden rounded-xl">
+            <ul className="divide-y divide-border">
               {chambers.map((chamber) => (
                 <li key={chamber.chamber_id}>
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-medium text-gray-900">{chamber.chamber_name}</h3>
-                        <p className="mt-1 text-sm text-gray-600">Location: {chamber.location}</p>
-                        {chamber.district && <p className="mt-1 text-sm text-gray-600">District: {chamber.district}</p>}
-                        {chamber.doctor_id && <p className="mt-1 text-sm text-gray-600">Doctor ID: {chamber.doctor_id}</p>}
+                  <div className="px-4 py-3 sm:px-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-medium text-foreground">{chamber.chamber_name}</h3>
+                        <p className="mt-0.5 text-xs text-muted-foreground">Location: {chamber.location}</p>
+                        {chamber.district && <p className="mt-0.5 text-xs text-muted-foreground">District: {chamber.district}</p>}
+                        {chamber.doctor_id && <p className="mt-0.5 text-xs text-muted-foreground">Doctor ID: {chamber.doctor_id}</p>}
                       </div>
-                      <div className="flex space-x-2">
-                        <button 
+                      <div className="flex space-x-2 shrink-0">
+                        <button
+                          type="button"
                           onClick={() => startEdit(chamber)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground px-2.5 py-1 rounded-lg text-xs"
                         >
                           Edit
                         </button>
-                        <button 
+                        <button
+                          type="button"
                           onClick={() => deleteChamber(chamber.chamber_id)}
-                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                          className="bg-destructive hover:bg-destructive/90 text-white px-2.5 py-1 rounded-lg text-xs"
                         >
                           Delete
                         </button>
@@ -280,10 +284,10 @@ export default function AdminChambersPage() {
                 </li>
               ))}
             </ul>
-            
+
             {chambers.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No chambers found.</p>
+              <div className="text-center py-10">
+                <p className="text-sm text-muted-foreground">No chambers found.</p>
               </div>
             )}
           </div>

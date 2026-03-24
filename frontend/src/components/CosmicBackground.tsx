@@ -23,7 +23,6 @@ export default function CosmicBackground() {
     const stars: Array<{ x: number; y: number; size: number; speed: number }> = []
     const numStars = 200
 
-    // Initialize stars
     for (let i = 0; i < numStars; i++) {
       stars.push({
         x: Math.random() * canvas.width,
@@ -36,17 +35,15 @@ export default function CosmicBackground() {
     let animationId: number
 
     const animate = () => {
-      ctx.fillStyle = 'rgb(15, 23, 42)'
+      ctx.fillStyle = 'rgb(11, 14, 20)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Draw stars
-      stars.forEach(star => {
+      stars.forEach((star) => {
         ctx.beginPath()
         ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.75)'
         ctx.fill()
 
-        // Move star
         star.x -= star.speed
         if (star.x < 0) {
           star.x = canvas.width
@@ -54,7 +51,6 @@ export default function CosmicBackground() {
         }
       })
 
-      // Draw gradient overlay
       const gradient = ctx.createRadialGradient(
         canvas.width / 2,
         canvas.height / 2,
@@ -63,8 +59,9 @@ export default function CosmicBackground() {
         canvas.height / 2,
         Math.max(canvas.width, canvas.height) / 2
       )
-      gradient.addColorStop(0, 'rgba(99, 102, 241, 0.1)')
-      gradient.addColorStop(1, 'rgba(99, 102, 241, 0)')
+      gradient.addColorStop(0, 'rgba(55, 105, 163, 0.16)')
+      gradient.addColorStop(0.45, 'rgba(55, 105, 163, 0.08)')
+      gradient.addColorStop(1, 'rgba(55, 105, 163, 0)')
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
@@ -83,7 +80,7 @@ export default function CosmicBackground() {
     <canvas
       ref={canvasRef}
       className="w-full h-full"
-      style={{ background: 'rgb(15, 23, 42)' }}
+      style={{ background: '#0b0e14' }}
     />
   )
 }

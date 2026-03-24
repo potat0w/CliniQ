@@ -57,29 +57,30 @@ export default function DoctorImport({ onImportComplete }: DoctorImportProps) {
   }
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6">
-      <h3 className="text-xl font-semibold text-white mb-4">Import Doctors from CSV</h3>
-      
-      <div className="bg-gray-700 rounded-lg p-4 border border-gray-600 mb-4">
-        <p className="text-gray-300 text-sm mb-2">
+    <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-4 hover:border-zinc-600 transition-colors duration-150">
+      <h3 className="text-sm font-semibold text-zinc-100 mb-3 tracking-tight">Import doctors from CSV</h3>
+
+      <div className="bg-zinc-950/80 rounded-lg p-3 border border-zinc-800 mb-3">
+        <p className="text-zinc-400 text-xs mb-2 leading-relaxed">
           CSV should contain columns: name, email, speciality, phone, experience, chamber_id
         </p>
-        <p className="text-gray-400 text-xs">
-          Required: name, email, speciality | Optional: phone, experience, chamber_id
+        <p className="text-zinc-500 text-[11px]">
+          Required: name, email, speciality · Optional: phone, experience, chamber_id
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-3">
         <input
           type="file"
           accept=".csv"
           onChange={handleFileChange}
-          className="flex-1 px-4 py-2 bg-gray-700 border border-gray-600 rounded-md text-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+          className="flex-1 px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-md text-zinc-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-xs file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
         />
         <button
+          type="button"
           onClick={handleUpload}
           disabled={!file || uploading}
-          className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-md font-medium transition-colors"
+          className="text-sm font-medium px-3 py-2 rounded-md border border-primary-bright/45 bg-primary/10 text-primary-bright hover:bg-primary/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           {uploading ? 'Importing...' : 'Import CSV'}
         </button>

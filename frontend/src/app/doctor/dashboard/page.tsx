@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { CheckCircle2, Clock } from 'lucide-react'
 
 interface DashboardStats {
   upcomingAppointments: number
@@ -111,155 +112,163 @@ export default function DoctorDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-sm text-muted-foreground">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Doctor Dashboard</h1>
-            <p className="text-gray-400 mt-2">Welcome back, Dr. {user?.name || 'User'}</p>
+            <h1 className="text-2xl font-bold">Doctor Dashboard</h1>
+            <p className="text-muted-foreground text-sm mt-1">Welcome back, Dr. {user?.name || 'User'}</p>
           </div>
           <button
+            type="button"
             onClick={handleLogout}
-            className="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+            className="px-3 py-1.5 bg-destructive/90 hover:bg-destructive text-white rounded-lg transition-colors text-sm"
           >
             Logout
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-xl font-semibold mb-4 text-blue-400">Appointments</h3>
-            <p className="text-3xl font-bold mb-2">{stats.upcomingAppointments}</p>
-            <p className="text-gray-400">Upcoming appointments</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="glass-panel rounded-xl p-4 border border-primary/20">
+            <h3 className="text-sm font-semibold mb-2 text-primary-bright">Appointments</h3>
+            <p className="text-2xl font-bold mb-1 tabular-nums">{stats.upcomingAppointments}</p>
+            <p className="text-xs text-muted-foreground">Upcoming appointments</p>
           </div>
 
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-xl font-semibold mb-4 text-green-400">Patients</h3>
-            <p className="text-3xl font-bold mb-2">{stats.totalPatients}</p>
-            <p className="text-gray-400">Total patients</p>
+          <div className="glass-panel rounded-xl p-4 border border-primary/20">
+            <h3 className="text-sm font-semibold mb-2 text-primary-bright">Patients</h3>
+            <p className="text-2xl font-bold mb-1 tabular-nums">{stats.totalPatients}</p>
+            <p className="text-xs text-muted-foreground">Total patients</p>
           </div>
 
-          <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-            <h3 className="text-xl font-semibold mb-4 text-purple-400">Profile</h3>
-            <p className="text-gray-400 mb-2">Speciality: {user?.specialty || 'Not specified'}</p>
-            <p className="text-gray-400">Email: {user?.email || 'Not available'}</p>
+          <div className="glass-panel rounded-xl p-4 border border-primary/20">
+            <h3 className="text-sm font-semibold mb-2 text-primary-bright">Profile</h3>
+            <p className="text-xs text-muted-foreground mb-1">Speciality: {user?.specialty || 'Not specified'}</p>
+            <p className="text-xs text-muted-foreground">Email: {user?.email || 'Not available'}</p>
           </div>
         </div>
 
-        {/* Patients Details Section */}
-        <div className="mt-8 bg-gray-800 rounded-lg p-6 border border-gray-700">
-          <h2 className="text-2xl font-semibold mb-4">Patient Details</h2>
+        <div className="mt-6 glass-panel rounded-xl p-4">
+          <h2 className="text-lg font-semibold mb-3">Patient Details</h2>
           {stats.patients && stats.patients.length > 0 ? (
             <div className="space-y-4">
               {stats.patients.map((patient) => (
-                <div key={patient.patient_id} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div key={patient.patient_id} className="bg-secondary/50 rounded-lg p-3 border border-border">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                     <div>
-                      <p className="text-sm text-gray-400 mb-1">Patient Name</p>
-                      <p className="text-white font-medium">{patient.name}</p>
+                      <p className="text-xs text-muted-foreground mb-0.5">Patient Name</p>
+                      <p className="text-sm text-foreground font-medium">{patient.name}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400 mb-1">Email</p>
-                      <p className="text-white">{patient.email}</p>
+                      <p className="text-xs text-muted-foreground mb-0.5">Email</p>
+                      <p className="text-sm text-foreground">{patient.email}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400 mb-1">Phone</p>
-                      <p className="text-white">{patient.phone || 'Not provided'}</p>
+                      <p className="text-xs text-muted-foreground mb-0.5">Phone</p>
+                      <p className="text-sm text-foreground">{patient.phone || 'Not provided'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400 mb-1">Age</p>
-                      <p className="text-white">{patient.age || 'Not specified'}</p>
+                      <p className="text-xs text-muted-foreground mb-0.5">Age</p>
+                      <p className="text-sm text-foreground">{patient.age || 'Not specified'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400 mb-1">Gender</p>
-                      <p className="text-white">{patient.gender || 'Not specified'}</p>
+                      <p className="text-xs text-muted-foreground mb-0.5">Gender</p>
+                      <p className="text-sm text-foreground">{patient.gender || 'Not specified'}</p>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-400 mb-1">Patient ID</p>
-                      <p className="text-white font-mono">#{patient.patient_id}</p>
+                      <p className="text-xs text-muted-foreground mb-0.5">Patient ID</p>
+                      <p className="text-sm text-foreground font-mono">#{patient.patient_id}</p>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-center py-8">No patients found.</p>
+            <p className="text-muted-foreground text-center py-6 text-sm">No patients found.</p>
           )}
         </div>
 
         {/* Upcoming Appointments Section */}
-        <div className="mt-8 bg-gray-800 rounded-lg p-6 border border-gray-700">
-          <h2 className="text-2xl font-semibold mb-4">Upcoming Appointments</h2>
+        <div className="mt-6 glass-panel rounded-xl p-4">
+          <h2 className="text-lg font-semibold mb-3">Upcoming Appointments</h2>
           {stats.appointments && stats.appointments.length > 0 ? (
             <div className="space-y-4">
               {stats.appointments.map((appointment) => (
-                <div key={appointment.appointment_id} className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-                  <div className="flex justify-between items-start mb-3">
+                <div key={appointment.appointment_id} className="bg-secondary/50 rounded-lg p-3 border border-border">
+                  <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="text-lg font-semibold text-white">Appointment #{appointment.appointment_id}</h3>
-                      <p className="text-gray-300">
+                      <h3 className="text-sm font-semibold text-foreground">Appointment #{appointment.appointment_id}</h3>
+                      <p className="text-xs text-muted-foreground">
                         {appointment.appointment_date ? new Date(appointment.appointment_date).toLocaleDateString() : 'Date not set'} • {appointment.start_time} - {appointment.end_time}
                       </p>
                     </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      appointment.status === 'scheduled' ? 'bg-blue-600 text-white' :
-                      appointment.status === 'rescheduled' ? 'bg-yellow-600 text-white' :
-                      'bg-gray-600 text-white'
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      appointment.status === 'scheduled' ? 'bg-primary/25 text-primary-bright border border-primary-bright/40' :
+                      appointment.status === 'rescheduled' ? 'bg-primary/15 text-primary-bright border border-primary-bright/35' :
+                      'bg-secondary text-muted-foreground border border-border'
                     }`}>
                       {appointment.status}
                     </span>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Patient Info */}
-                    <div className="bg-gray-800 rounded p-3">
-                      <p className="text-sm text-gray-400 mb-1">Patient</p>
-                      <p className="text-white font-medium">{appointment.patients?.name || 'Unknown'}</p>
-                      <p className="text-gray-300 text-sm">{appointment.patients?.email}</p>
-                      <p className="text-gray-300 text-sm">{appointment.patients?.phone || 'No phone'}</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="bg-background/50 rounded-lg p-2.5 border border-border">
+                      <p className="text-xs text-muted-foreground mb-0.5">Patient</p>
+                      <p className="text-sm text-foreground font-medium">{appointment.patients?.name || 'Unknown'}</p>
+                      <p className="text-xs text-muted-foreground">{appointment.patients?.email}</p>
+                      <p className="text-xs text-muted-foreground">{appointment.patients?.phone || 'No phone'}</p>
                     </div>
-                    
-                    {/* Doctor Info */}
-                    <div className="bg-gray-800 rounded p-3">
-                      <p className="text-sm text-gray-400 mb-1">Doctor</p>
-                      <p className="text-white font-medium">{appointment.doctors?.doctor_name || 'Unknown'}</p>
-                      <p className="text-gray-300 text-sm">{appointment.doctors?.speciality}</p>
+
+                    <div className="bg-background/50 rounded-lg p-2.5 border border-border">
+                      <p className="text-xs text-muted-foreground mb-0.5">Doctor</p>
+                      <p className="text-sm text-foreground font-medium">{appointment.doctors?.doctor_name || 'Unknown'}</p>
+                      <p className="text-xs text-muted-foreground">{appointment.doctors?.speciality}</p>
                     </div>
-                    
-                    {/* Chamber Info */}
-                    <div className="bg-gray-800 rounded p-3">
-                      <p className="text-sm text-gray-400 mb-1">Chamber</p>
-                      <p className="text-white font-medium">{appointment.chambers?.chamber_name || 'Unknown'}</p>
-                      <p className="text-gray-300 text-sm">{appointment.chambers?.location}</p>
+
+                    <div className="bg-background/50 rounded-lg p-2.5 border border-border">
+                      <p className="text-xs text-muted-foreground mb-0.5">Chamber</p>
+                      <p className="text-sm text-foreground font-medium">{appointment.chambers?.chamber_name || 'Unknown'}</p>
+                      <p className="text-xs text-muted-foreground">{appointment.chambers?.location}</p>
                     </div>
                   </div>
-                  
-                  <div className="mt-3 flex justify-between items-center">
-                    <p className="text-sm text-gray-400">
+
+                  <div className="mt-2 flex justify-between items-center">
+                    <p className="text-xs text-muted-foreground">
                       Booked: {new Date(appointment.booking_time).toLocaleString()}
                     </p>
-                    <p className="text-sm text-gray-400">
-                      Payment: {appointment.payment_done ? '✅ Paid' : '⏳ Pending'}
-                    </p>
+                    <span className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
+                      Payment:
+                      {appointment.payment_done ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-primary-bright shrink-0" aria-hidden />
+                          Paid
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="w-3.5 h-3.5 text-primary-bright shrink-0" aria-hidden />
+                          Pending
+                        </>
+                      )}
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-center py-8">No upcoming appointments found.</p>
+            <p className="text-muted-foreground text-center py-6 text-sm">No upcoming appointments found.</p>
           )}
         </div>
 
-        <div className="mt-8 bg-gray-800 rounded-lg p-6 border border-gray-700">
-          <h2 className="text-2xl font-semibold mb-4">Recent Activity</h2>
-          <p className="text-gray-400">No recent activity to display.</p>
+        <div className="mt-6 glass-panel rounded-xl p-4">
+          <h2 className="text-lg font-semibold mb-2">Recent Activity</h2>
+          <p className="text-sm text-muted-foreground">No recent activity to display.</p>
         </div>
       </div>
     </div>

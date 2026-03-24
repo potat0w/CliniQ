@@ -1,6 +1,21 @@
 'use client'
 
 import { useState, useRef, useCallback, useEffect } from 'react'
+import {
+  Mic,
+  FileText,
+  Stethoscope,
+  Users,
+  GraduationCap,
+  Building2,
+  MapPin,
+  Star,
+  CalendarDays,
+  CircleDot,
+  Upload,
+  Brain,
+  Circle,
+} from 'lucide-react'
 
 export default function VoiceAgent() {
   const [isRecording, setIsRecording] = useState(false);
@@ -83,7 +98,7 @@ export default function VoiceAgent() {
       
     } catch (err) {
       console.error('Error accessing microphone:', err);
-      setMessage("❌ Microphone access denied. Please allow microphone permissions.");
+      setMessage('Microphone access denied. Please allow microphone permissions.');
       setIsRecording(false);
     }
   }, []);
@@ -136,7 +151,7 @@ export default function VoiceAgent() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to process audio';
       setError(errorMessage);
-      setMessage("❌ " + errorMessage);
+      setMessage(errorMessage);
       setIsUploading(false);
     }
   };
@@ -162,7 +177,7 @@ export default function VoiceAgent() {
       if (result.success) {
         setMedicalAnalysis(result.data.analysis);
         setRecommendedDoctors(result.data.doctors || []);
-        setMessage("✅ Analysis complete!");
+        setMessage('Analysis complete!');
       } else {
         throw new Error(result.message || 'Analysis failed');
       }
@@ -170,7 +185,7 @@ export default function VoiceAgent() {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to analyze symptoms';
       setError(errorMessage);
-      setMessage("❌ " + errorMessage);
+      setMessage(errorMessage);
     } finally {
       setIsUploading(false);
       setIsAnalyzing(false);
@@ -272,9 +287,12 @@ export default function VoiceAgent() {
   return (
     <div className="space-y-6">
       {/* Instructions */}
-      <div className="bg-gray-700 rounded-lg p-4 border border-gray-600">
-        <h4 className="text-white font-medium mb-2">🎤 Medical Voice Assistant</h4>
-        <div className="text-sm text-gray-300 space-y-1">
+      <div className="bg-secondary/50 rounded-lg p-3 border border-border">
+        <h4 className="text-white font-medium mb-2 flex items-center gap-2">
+          <Mic className="w-5 h-5 text-primary-bright shrink-0" aria-hidden />
+          Medical Voice Assistant
+        </h4>
+        <div className="text-sm text-muted-foreground space-y-1">
           <p>• Click the microphone to record your symptoms</p>
           <p>• Describe: what problem, how long, severity</p>
           <p>• Get AI analysis and doctor recommendations</p>
@@ -284,9 +302,9 @@ export default function VoiceAgent() {
       {/* Toast Notifications */}
       {toast && (
         <div className={`fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 transition-all duration-300 ${
-          toast.type === 'success' ? 'bg-green-600 text-white' :
+          toast.type === 'success' ? 'bg-primary text-primary-foreground' :
           toast.type === 'error' ? 'bg-red-600 text-white' :
-          'bg-blue-600 text-white'
+          'bg-primary text-primary-foreground'
         }`}>
           <div className="flex items-center">
             {toast.type === 'success' && (
@@ -323,13 +341,13 @@ export default function VoiceAgent() {
           )}
           {isUploading && (
             <div className="flex items-center justify-center space-x-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               <span className="text-white font-medium">Transcribing...</span>
             </div>
           )}
           {isAnalyzing && (
             <div className="flex items-center justify-center space-x-2">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-500"></div>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               <span className="text-white font-medium">Analyzing...</span>
             </div>
           )}
@@ -340,7 +358,7 @@ export default function VoiceAgent() {
           disabled={isUploading || isAnalyzing}
           className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
             isRecording 
-              ? 'bg-gray-600 hover:bg-gray-700 text-white' 
+              ? 'bg-secondary hover:bg-secondary/80 text-foreground border border-border' 
               : 'bg-red-600 hover:bg-red-700 text-white'
           }`}
         >
@@ -356,7 +374,7 @@ export default function VoiceAgent() {
           )}
         </button>
         
-        <p className="text-sm text-gray-400 text-center max-w-md">
+        <p className="text-sm text-muted-foreground text-center max-w-md">
           {isRecording ? "Click to stop recording" : isUploading || isAnalyzing ? "Processing..." : "Click to start recording"}
         </p>
         
@@ -364,7 +382,7 @@ export default function VoiceAgent() {
         {(transcription || medicalAnalysis || error) && !isUploading && !isAnalyzing && (
           <button
             onClick={resetRecording}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+            className="px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg transition-colors duration-200"
           >
             New Recording
           </button>
@@ -388,32 +406,38 @@ export default function VoiceAgent() {
       
       {/* Transcription Result */}
       {transcription && (
-        <div className="p-6 bg-gray-800 rounded-lg border border-gray-600">
-          <h3 className="text-lg font-semibold text-gray-300 mb-3">📝 What you said:</h3>
+        <div className="p-6 glass-panel rounded-xl border border-border">
+          <h3 className="text-lg font-semibold text-muted-foreground mb-3 flex items-center gap-2">
+            <FileText className="w-5 h-5 shrink-0" aria-hidden />
+            What you said:
+          </h3>
           <p className="text-white leading-relaxed">{transcription}</p>
         </div>
       )}
       
       {/* Medical Analysis Result */}
       {medicalAnalysis && (
-        <div className="p-6 bg-blue-900 border border-blue-700 rounded-lg">
-          <h3 className="text-lg font-semibold text-blue-300 mb-4">🩺 Analysis Results</h3>
+        <div className="p-6 bg-zinc-900/90 border border-primary/35 rounded-lg">
+          <h3 className="text-lg font-semibold text-primary-bright mb-4 flex items-center gap-2">
+            <Stethoscope className="w-5 h-5 shrink-0" aria-hidden />
+            Analysis Results
+          </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <h4 className="font-medium text-gray-300 mb-1">Symptom:</h4>
+              <h4 className="font-medium text-muted-foreground mb-1">Symptom:</h4>
               <p className="text-white">{medicalAnalysis.symptom}</p>
             </div>
             <div>
-              <h4 className="font-medium text-gray-300 mb-1">Duration:</h4>
+              <h4 className="font-medium text-muted-foreground mb-1">Duration:</h4>
               <p className="text-white">{medicalAnalysis.duration}</p>
             </div>
             <div>
-              <h4 className="font-medium text-gray-300 mb-1">Severity:</h4>
+              <h4 className="font-medium text-muted-foreground mb-1">Severity:</h4>
               <p className="text-white">{medicalAnalysis.severity}</p>
             </div>
             <div>
-              <h4 className="font-medium text-gray-300 mb-1">Recommended Doctor:</h4>
-              <p className="text-white font-medium text-blue-400">{medicalAnalysis.doctor}</p>
+              <h4 className="font-medium text-muted-foreground mb-1">Recommended Doctor:</h4>
+              <p className="text-white font-medium text-primary-bright">{medicalAnalysis.doctor}</p>
             </div>
           </div>
         </div>
@@ -421,34 +445,47 @@ export default function VoiceAgent() {
       
       {/* Recommended Doctors */}
       {recommendedDoctors.length > 0 && (
-        <div className="p-6 bg-green-900 border border-green-700 rounded-lg">
-          <h3 className="text-lg font-semibold text-green-300 mb-4">👨‍⚕️ Recommended Doctors</h3>
+        <div className="p-6 bg-zinc-900/90 border border-primary/35 rounded-lg">
+          <h3 className="text-lg font-semibold text-primary-bright mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 shrink-0" aria-hidden />
+            Recommended Doctors
+          </h3>
           <div className="space-y-4">
             {recommendedDoctors.map((doctor, index) => (
-              <div key={doctor.id} className="bg-gray-800 p-4 rounded-lg border border-green-600">
+              <div key={doctor.id} className="bg-secondary/50 p-3 rounded-lg border border-primary/35">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <h4 className="font-medium text-white mb-1">
                       {index + 1}. {doctor.name}
                     </h4>
-                    <p className="text-green-400 text-sm mb-2">{doctor.specialty}</p>
-                    <p className="text-gray-300 text-sm mb-1">
-                      🎓 {doctor.education}
+                    <p className="text-primary-bright text-sm mb-2">{doctor.specialty}</p>
+                    <p className="text-muted-foreground text-sm mb-1 flex items-start gap-2">
+                      <GraduationCap className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
+                      <span>{doctor.education}</span>
                     </p>
-                    <p className="text-gray-300 text-sm mb-1">
-                      🏥 {doctor.chamber}
+                    <p className="text-muted-foreground text-sm mb-1 flex items-start gap-2">
+                      <Building2 className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
+                      <span>{doctor.chamber}</span>
                     </p>
-                    <p className="text-gray-300 text-sm mb-1">
-                      📍 {doctor.location}
+                    <p className="text-muted-foreground text-sm mb-1 flex items-start gap-2">
+                      <MapPin className="w-4 h-4 shrink-0 mt-0.5" aria-hidden />
+                      <span>{doctor.location}</span>
                     </p>
-                    <p className="text-gray-300 text-sm">
-                      ⭐ Score: {doctor.recommendationScore?.toFixed(2)} | 📅 {doctor.experience} years
+                    <p className="text-muted-foreground text-sm flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="inline-flex items-center gap-1">
+                        <Star className="w-3.5 h-3.5 shrink-0" aria-hidden />
+                        Score: {doctor.recommendationScore?.toFixed(2)}
+                      </span>
+                      <span className="inline-flex items-center gap-1">
+                        <CalendarDays className="w-3.5 h-3.5 shrink-0" aria-hidden />
+                        {doctor.experience} years
+                      </span>
                     </p>
                   </div>
                   <div className="ml-4">
                     <button
                       onClick={() => bookDoctorAppointment(doctor)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
                     >
                       Book Appointment
                     </button>
@@ -461,15 +498,32 @@ export default function VoiceAgent() {
       )}
       
       {/* Status Display */}
-      <div className="bg-gray-800 rounded-lg p-4 border border-gray-600">
+      <div className="glass-panel rounded-xl p-3">
         <h4 className="text-white font-medium mb-2">Status</h4>
-        <p className="text-gray-300">
-          {isRecording ? "🔴 Recording in progress..." : 
-           isUploading ? "📤 Transcribing audio..." :
-           isAnalyzing ? "🧠 Analyzing symptoms..." :
-           "⚪ Ready to record"}
+        <p className="text-muted-foreground flex items-center gap-2 flex-wrap">
+          {isRecording ? (
+            <>
+              <CircleDot className="w-4 h-4 text-red-500 shrink-0" aria-hidden />
+              <span>Recording in progress...</span>
+            </>
+          ) : isUploading ? (
+            <>
+              <Upload className="w-4 h-4 shrink-0" aria-hidden />
+              <span>Transcribing audio...</span>
+            </>
+          ) : isAnalyzing ? (
+            <>
+              <Brain className="w-4 h-4 shrink-0" aria-hidden />
+              <span>Analyzing symptoms...</span>
+            </>
+          ) : (
+            <>
+              <Circle className="w-4 h-4 shrink-0" aria-hidden />
+              <span>Ready to record</span>
+            </>
+          )}
         </p>
-        <p className="text-sm text-gray-400 mt-2">
+        <p className="text-sm text-muted-foreground mt-2">
           {recordingTime > 0 ? `Duration: ${formatTime(recordingTime)}` : "Click microphone to begin"}
         </p>
       </div>
@@ -477,11 +531,11 @@ export default function VoiceAgent() {
       {/* Booking Modal */}
       {showBookingModal && selectedDoctorForBooking && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+          <div className="bg-popover border border-border rounded-xl p-5 max-w-md w-full mx-4 shadow-[0_0_48px_-12px_rgba(55,105,163,0.25)]">
             <h3 className="text-xl font-semibold text-white mb-4">
               Book Appointment with Dr. {selectedDoctorForBooking.name}
             </h3>
-            <p className="text-gray-300 mb-4">Select an available time slot:</p>
+            <p className="text-muted-foreground mb-4">Select an available time slot:</p>
             
             <div className="space-y-3 max-h-64 overflow-y-auto">
               {availableSlots.map((slot, index) => {
@@ -493,13 +547,13 @@ export default function VoiceAgent() {
                   <button
                     key={slot.slot_id}
                     onClick={() => confirmBooking(slot)}
-                    className="w-full bg-gray-700 hover:bg-gray-600 text-white p-3 rounded-lg text-left transition-colors duration-200"
+                    className="w-full bg-secondary/80 hover:bg-secondary text-foreground p-3 rounded-lg text-left transition-colors duration-200 border border-border"
                   >
                     <div className="font-medium">{dayName}</div>
-                    <div className="text-sm text-gray-300">
+                    <div className="text-sm text-muted-foreground">
                       {slot.start_time} - {slot.end_time}
                     </div>
-                    <div className="text-xs text-green-400">
+                    <div className="text-xs text-primary-bright">
                       Fee: ${slot.fee || 1000}
                     </div>
                   </button>
@@ -514,7 +568,7 @@ export default function VoiceAgent() {
                   setAvailableSlots([]);
                   setSelectedDoctorForBooking(null);
                 }}
-                className="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                className="flex-1 bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2 rounded-lg transition-colors duration-200 border border-border"
               >
                 Cancel
               </button>
