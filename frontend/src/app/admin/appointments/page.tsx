@@ -165,30 +165,38 @@ export default function AdminAppointmentsPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="border-b border-zinc-800 bg-zinc-950/85 backdrop-blur-md">
+      <div className="border-b border-zinc-800 bg-zinc-950/85 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-14 items-center">
-            <div className="flex items-center">
-              <button
-                type="button"
-                onClick={() => router.push('/admin/dashboard')}
-                className="text-primary-bright hover:text-sky-300 mr-3 text-sm"
-              >
-                ← Back to Dashboard
-              </button>
-              <h1 className="text-lg font-semibold text-foreground">Manage Appointments</h1>
-            </div>
+          <div className="flex justify-between items-center py-3">
             <div className="flex items-center space-x-4">
               <button
                 type="button"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-1.5 rounded-lg text-sm font-medium shadow-[0_0_20px_-6px_rgba(55,105,163,0.4)]"
+                onClick={() => router.push('/admin/dashboard')}
+                className="text-muted-foreground hover:text-foreground p-2 hover:bg-secondary rounded-lg transition-colors"
               >
-                Add New Appointment
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <div>
+                <h1 className="text-lg font-bold text-foreground">Manage Appointments</h1>
+                <p className="text-xs text-muted-foreground">View and manage appointment schedules</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <button
+                type="button"
+                className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium flex items-center space-x-2 shadow-[0_0_20px_-6px_rgba(55,105,163,0.4)]"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Add New Appointment</span>
               </button>
             </div>
           </div>
         </div>
-      </nav>
+      </div>
 
       <main className="max-w-7xl mx-auto py-5 sm:px-6 lg:px-8">
         <div className="px-4 py-4 sm:px-0">

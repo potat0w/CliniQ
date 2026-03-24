@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import '@/styles/admin-theme.css'
+import Swal from 'sweetalert2'
 
 interface Doctor {
   doctor_id: number
@@ -29,6 +30,27 @@ export default function AdminDoctorsPage() {
     location: ''
   })
   const router = useRouter()
+
+  // Toast helper function
+  const showToast = (title: string, text: string, icon: 'success' | 'error' | 'warning' | 'info') => {
+    const toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+      }
+    })
+    
+    toast.fire({
+      icon,
+      title,
+      text
+    })
+  }
 
   useEffect(() => {
     const token = localStorage.getItem('token')
@@ -59,11 +81,14 @@ export default function AdminDoctorsPage() {
         }))
         console.log('Fetched doctors:', processedData) // Debug log
         setDoctors(processedData)
+        showToast('Success', 'Doctors loaded successfully', 'success')
       } else {
         setError('Failed to fetch doctors')
+        showToast('Error', 'Failed to fetch doctors', 'error')
       }
     } catch (error) {
       setError('Error fetching doctors')
+      showToast('Error', 'Error fetching doctors', 'error')
     } finally {
       setLoading(false)
     }
@@ -95,7 +120,18 @@ export default function AdminDoctorsPage() {
   }
 
   const deleteDoctor = async (doctorId: number) => {
-    if (!confirm('Are you sure you want to delete this doctor?')) return
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel'
+    })
+
+    if (!result.isConfirmed) return
 
     try {
       const token = localStorage.getItem('token')
@@ -108,12 +144,15 @@ export default function AdminDoctorsPage() {
 
       if (response.ok) {
         setDoctors(doctors.filter(d => d.doctor_id !== doctorId))
+        showToast('Deleted!', 'Doctor has been deleted.', 'success')
       } else {
         const errorData = await response.json()
         setError(errorData.error || 'Failed to delete doctor')
+        showToast('Error', errorData.error || 'Failed to delete doctor', 'error')
       }
     } catch (error) {
       setError('Error deleting doctor')
+      showToast('Error', 'Error deleting doctor', 'error')
     }
   }
 
@@ -171,12 +210,15 @@ export default function AdminDoctorsPage() {
             : d
         ))
         cancelEdit()
+        showToast('Success', 'Doctor information updated successfully', 'success')
       } else {
         const errorData = await response.json()
         setError(errorData.error || 'Failed to update doctor')
+        showToast('Error', errorData.error || 'Failed to update doctor', 'error')
       }
     } catch (error) {
       setError('Error updating doctor')
+      showToast('Error', 'Error updating doctor', 'error')
     }
   }
 
@@ -213,6 +255,7 @@ export default function AdminDoctorsPage() {
             <div className="flex items-center space-x-3">
               <button
                 type="button"
+                onClick={() => showToast('Info', 'Add doctor functionality coming soon!', 'info')}
                 className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium flex items-center space-x-2 shadow-[0_0_20px_-6px_rgba(55,105,163,0.4)]"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -252,84 +295,84 @@ export default function AdminDoctorsPage() {
         )}
 
           {editingDoctor && (
-            <div className="fixed inset-0 bg-admin-bg/80 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
-              <div className="relative top-20 mx-auto p-6 border border-admin-border w-full max-w-md rounded-xl bg-admin-card shadow-[0_0_48px_-12px_rgba(0,180,255,0.25)]">
-                <h3 className="text-base font-bold text-admin-text mb-4">Edit Doctor</h3>
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50">
+              <div className="relative top-20 mx-auto p-4 border border-gray-700 w-full max-w-md rounded-2xl bg-gray-900 shadow-[0_0_48px_-12px_rgba(0,180,255,0.25)]">
+                <h3 className="text-xl font-bold text-white mb-3">Edit Doctor</h3>
                 
-                <div className="space-y-4">
+                <div className="space-y-2">
                   <div>
-                    <label className="block text-xs font-medium text-admin-blue3 mb-1">Name</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Name</label>
                     <input
                       type="text"
                       value={editForm.doctor_name}
                       onChange={(e) => setEditForm({...editForm, doctor_name: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 text-sm text-admin-text bg-admin-card2 border border-admin-border rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-blue3/40"
+                      className="block w-full px-3 py-2 text-sm text-white bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-medium text-admin-blue3 mb-1">Email</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
                     <input
                       type="email"
                       value={editForm.email}
                       onChange={(e) => setEditForm({...editForm, email: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 text-sm text-admin-text bg-admin-card2 border border-admin-border rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-blue3/40"
+                      className="block w-full px-3 py-2 text-sm text-white bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-medium text-admin-blue3 mb-1">Speciality</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Speciality</label>
                     <input
                       type="text"
                       value={editForm.speciality}
                       onChange={(e) => setEditForm({...editForm, speciality: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 text-sm text-admin-text bg-admin-card2 border border-admin-border rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-blue3/40"
+                      className="block w-full px-3 py-2 text-sm text-white bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-medium text-admin-blue3 mb-1">Experience (years)</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Experience (years)</label>
                     <input
                       type="number"
                       value={editForm.experience}
                       onChange={(e) => setEditForm({...editForm, experience: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 text-sm text-admin-text bg-admin-card2 border border-admin-border rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-blue3/40"
+                      className="block w-full px-3 py-2 text-sm text-white bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-medium text-admin-blue3 mb-1">Chamber</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Chamber</label>
                     <input
                       type="text"
                       value={editForm.chamber}
                       onChange={(e) => setEditForm({...editForm, chamber: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 text-sm text-admin-text bg-admin-card2 border border-admin-border rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-blue3/40"
+                      className="block w-full px-3 py-2 text-sm text-white bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-medium text-admin-blue3 mb-1">Location</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-1">Location</label>
                     <input
                       type="text"
                       value={editForm.location}
                       onChange={(e) => setEditForm({...editForm, location: e.target.value})}
-                      className="mt-1 block w-full px-3 py-2 text-sm text-admin-text bg-admin-card2 border border-admin-border rounded-lg focus:outline-none focus:ring-2 focus:ring-admin-blue3/40"
+                      className="block w-full px-3 py-2 text-sm text-white bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-2 mt-6">
+                <div className="flex justify-end space-x-2 mt-3">
                   <button
                     type="button"
                     onClick={cancelEdit}
-                    className="px-3 py-1.5 bg-admin-card text-admin-text rounded-lg border border-admin-border hover:bg-admin-card2 text-sm"
+                    className="px-4 py-1 bg-transparent text-white border border-gray-500 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={saveEdit}
-                    className="admin-btn-logout text-sm"
+                    className="px-4 py-1 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                   >
                     Save Changes
                   </button>
@@ -425,7 +468,7 @@ export default function AdminDoctorsPage() {
                           <button
                             type="button"
                             onClick={() => deleteDoctor(doctor.doctor_id)}
-                            className="px-2.5 py-1.5 bg-destructive text-white rounded-lg hover:bg-destructive/90 transition-colors text-xs font-medium flex items-center space-x-1"
+                            className="px-4 py-2 bg-gray-900 text-red-500 rounded-lg hover:bg-gray-800 transition-colors text-xs font-medium flex items-center space-x-1 border border-red-500/20"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
