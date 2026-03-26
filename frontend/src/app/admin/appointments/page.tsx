@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Swal from 'sweetalert2'
 
 interface Appointment {
   appointment_id: number
@@ -74,7 +75,17 @@ export default function AdminAppointmentsPage() {
   }
 
   const deleteAppointment = async (appointmentId: number) => {
-    if (!confirm('Are you sure you want to delete this appointment?')) return
+    const result = await Swal.fire({
+      title: 'Delete appointment?',
+      text: "This action can't be undone.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Delete',
+      cancelButtonText: 'Cancel',
+      confirmButtonColor: '#ef4444'
+    })
+
+    if (!result.isConfirmed) return
 
     try {
       const token = localStorage.getItem('token')
@@ -87,11 +98,38 @@ export default function AdminAppointmentsPage() {
 
       if (response.ok) {
         setAppointments(appointments.filter(a => a.appointment_id !== appointmentId))
+        Swal.fire({
+          icon: 'success',
+          title: 'Deleted',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true
+        })
       } else {
         setError('Failed to delete appointment')
+        Swal.fire({
+          icon: 'error',
+          title: 'Failed to delete',
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true
+        })
       }
     } catch (error) {
       setError('Error deleting appointment')
+      Swal.fire({
+        icon: 'error',
+        title: 'Error deleting',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true
+      })
     }
   }
 

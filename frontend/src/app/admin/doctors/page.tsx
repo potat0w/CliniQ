@@ -132,7 +132,7 @@ export default function AdminDoctorsPage() {
           setCurrentPage(1)
         }
         
-        showToast('Success', 'Doctors loaded successfully', 'success')
+        // Avoid toasting on every fetch (pagination/filter/initial load)
       } else {
         setError('Failed to fetch doctors')
         showToast('Error', 'Failed to fetch doctors', 'error')
