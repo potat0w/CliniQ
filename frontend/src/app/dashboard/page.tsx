@@ -93,8 +93,7 @@ export default function DashboardPage() {
   const [notification, setNotification] = useState<string | null>(null)
   const [bookingData, setBookingData] = useState({
     date: '',
-    time: '',
-    notes: ''
+    time: ''
   })
   const [doctorSlots, setDoctorSlots] = useState<any[]>([])
   const [availableDates, setAvailableDates] = useState<Date[]>([])
@@ -313,7 +312,7 @@ const fetchDoctors = async () => {
   const handleBookAppointment = (doctor: Doctor) => {
     setSelectedDoctor(doctor)
     setShowBookingForm(true)
-    setBookingData({ date: '', time: '', notes: '' })
+    setBookingData({ date: '', time: '' })
     setDoctorSlots([])
     setAvailableDates([])
     setSlotsForSelectedDate([])
@@ -355,15 +354,14 @@ const fetchDoctors = async () => {
         },
         body: JSON.stringify({
           doctorId: selectedDoctor.doctor_id,
-          slotId: firstSlot.slot_id,
-          notes: bookingData.notes
+          slotId: firstSlot.slot_id
         })
       })
 
       if (response.ok) {
         setShowBookingForm(false)
         setSelectedDoctor(null)
-        setBookingData({ date: '', time: '', notes: '' })
+        setBookingData({ date: '', time: '' })
         fetchAppointments()
         showNotification('Appointment booked successfully!')
       } else {
@@ -579,6 +577,23 @@ const fetchDoctors = async () => {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 w-full max-w-md shadow-xl">
             <h3 className="text-sm font-semibold text-zinc-100 mb-4 tracking-tight">Book with Dr. {selectedDoctor.doctor_name}</h3>
+            
+            {/* Doctor Info */}
+            <div className="mb-4 p-3 bg-zinc-950 border border-zinc-800 rounded-lg">
+              <div className="text-xs text-zinc-400 space-y-1">
+                <p><span className="text-zinc-500">Speciality:</span> {selectedDoctor.speciality}</p>
+                {selectedDoctor.chamber && (
+                  <p><span className="text-zinc-500">Chamber:</span> {selectedDoctor.chamber}</p>
+                )}
+                {selectedDoctor.location && (
+                  <p><span className="text-zinc-500">Location:</span> {selectedDoctor.location}</p>
+                )}
+                {selectedDoctor.experience && (
+                  <p><span className="text-zinc-500">Experience:</span> {selectedDoctor.experience} years</p>
+                )}
+              </div>
+            </div>
+
             <form onSubmit={handleBooking} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-zinc-500 mb-1.5 uppercase tracking-wide">Select date</label>
@@ -619,17 +634,7 @@ const fetchDoctors = async () => {
                   </select>
                 </div>
               )}
-
-              <div>
-                <label className="block text-xs font-medium text-zinc-500 mb-1.5 uppercase tracking-wide">Notes (optional)</label>
-                <textarea
-                  value={bookingData.notes}
-                  onChange={(e) => setBookingData({ ...bookingData, notes: e.target.value })}
-                  rows={3}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-800 rounded-md text-zinc-100 text-sm focus:outline-none focus:border-zinc-600 placeholder:text-zinc-600"
-                  placeholder="Describe your symptoms or reason for visit..."
-                />
-              </div>
+              
               <div className="flex gap-3 pt-1">
                 <button
                   type="submit"
@@ -643,7 +648,7 @@ const fetchDoctors = async () => {
                   onClick={() => {
                     setShowBookingForm(false)
                     setSelectedDoctor(null)
-                    setBookingData({ date: '', time: '', notes: '' })
+                    setBookingData({ date: '', time: '' })
                     setDoctorSlots([])
                     setAvailableDates([])
                     setSlotsForSelectedDate([])
