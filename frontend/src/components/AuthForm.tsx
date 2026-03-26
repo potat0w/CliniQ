@@ -72,18 +72,18 @@ const AuthForm = ({ initialMode = 'signup' }: AuthFormProps) => {
 
         switch (role) {
           case 'patient':
-            apiUrl = 'http://localhost:5000/api/patients/register'
+            apiUrl = 'https://cliniq-1-hmus.onrender.com/api/patients/register'
             payload.name = formData.name
             payload.phone = formData.phone || null
             payload.age = formData.age ? parseInt(formData.age) : null
             payload.gender = formData.gender || null
             break
           case 'doctor':
-            apiUrl = 'http://localhost:5000/api/doctors/signup'
+            apiUrl = 'https://cliniq-1-hmus.onrender.com/api/doctors/signup'
             payload.doctorId = formData.doctorId
             break
           case 'admin':
-            apiUrl = 'http://localhost:5000/api/admin/register'
+            apiUrl = 'https://cliniq-1-hmus.onrender.com/api/admin/register'
             payload.name = formData.name
             break
         }
@@ -112,13 +112,13 @@ const AuthForm = ({ initialMode = 'signup' }: AuthFormProps) => {
         
         switch (role) {
           case 'patient':
-            apiUrl = 'http://localhost:5000/api/patients/login'
+            apiUrl = 'https://cliniq-1-hmus.onrender.com/api/patients/login'
             break
           case 'doctor':
-            apiUrl = 'http://localhost:5000/api/doctors/login'
+            apiUrl = 'https://cliniq-1-hmus.onrender.com/api/doctors/login'
             break
           case 'admin':
-            apiUrl = 'http://localhost:5000/api/admin/login'
+            apiUrl = 'https://cliniq-1-hmus.onrender.com/api/admin/login'
             break
         }
 

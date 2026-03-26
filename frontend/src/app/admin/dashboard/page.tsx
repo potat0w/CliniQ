@@ -48,7 +48,7 @@ export default function AdminDashboardPage() {
         return
       }
 
-      const response = await fetch('http://localhost:5000/api/admin/dashboard-stats', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/admin/dashboard-stats', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

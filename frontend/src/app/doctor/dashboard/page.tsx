@@ -81,7 +81,7 @@ export default function DoctorDashboard() {
       const token = localStorage.getItem('token')
       console.log('Fetching dashboard stats with token:', token ? 'Token exists' : 'No token')
       
-      const response = await fetch('http://localhost:5000/api/doctors/dashboard/stats', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/doctors/dashboard/stats', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

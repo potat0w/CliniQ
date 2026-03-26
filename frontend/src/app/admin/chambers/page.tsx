@@ -54,7 +54,7 @@ export default function AdminChambersPage() {
     try {
       setLoading(true)
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5000/api/admin/chambers?page=${page}&limit=${itemsPerPage}`, {
+      const response = await fetch(`https://cliniq-1-hmus.onrender.com/api/admin/chambers?page=${page}&limit=${itemsPerPage}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -132,7 +132,7 @@ export default function AdminChambersPage() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5000/api/admin/chambers/${chamberId}`, {
+      const response = await fetch(`https://cliniq-1-hmus.onrender.com/api/admin/chambers/${chamberId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -222,7 +222,7 @@ export default function AdminChambersPage() {
         specialties: createForm.specialties
       }
 
-      const response = await fetch('http://localhost:5000/api/admin/chambers', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/admin/chambers', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -292,7 +292,7 @@ export default function AdminChambersPage() {
         specialties: editForm.specialties
       }
 
-      const response = await fetch(`http://localhost:5000/api/admin/chambers/${editingChamber.chamber_id}`, {
+      const response = await fetch(`https://cliniq-1-hmus.onrender.com/api/admin/chambers/${editingChamber.chamber_id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

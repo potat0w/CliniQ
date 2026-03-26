@@ -27,7 +27,7 @@ export default function AdminSignupPage() {
     setError('')
 
     try {
-      const response = await fetch('http://localhost:5000/api/admin/register', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/admin/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

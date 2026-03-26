@@ -41,7 +41,7 @@ export default function AdminPatientsPage() {
   const fetchPatients = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/admin/patients', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/admin/patients', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -65,7 +65,7 @@ export default function AdminPatientsPage() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5000/api/admin/patients/${patientId}`, {
+      const response = await fetch(`https://cliniq-1-hmus.onrender.com/api/admin/patients/${patientId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`
@@ -111,7 +111,7 @@ export default function AdminPatientsPage() {
         gender: editForm.gender || null
       }
 
-      const response = await fetch(`http://localhost:5000/api/admin/patients/${editingPatient.patient_id}`, {
+      const response = await fetch(`https://cliniq-1-hmus.onrender.com/api/admin/patients/${editingPatient.patient_id}`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,

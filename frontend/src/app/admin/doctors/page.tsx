@@ -81,7 +81,7 @@ export default function AdminDoctorsPage() {
   const fetchChambers = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/admin/chambers', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/admin/chambers', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -102,7 +102,7 @@ export default function AdminDoctorsPage() {
       setLoading(true)
       const token = localStorage.getItem('token')
       const specialtyParam = selectedSpeciality !== 'all' ? `&specialty=${encodeURIComponent(selectedSpeciality)}` : ''
-      const response = await fetch(`http://localhost:5000/api/admin/doctors?page=${page}&limit=${itemsPerPage}${specialtyParam}`, {
+      const response = await fetch(`https://cliniq-1-hmus.onrender.com/api/admin/doctors?page=${page}&limit=${itemsPerPage}${specialtyParam}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -200,7 +200,7 @@ export default function AdminDoctorsPage() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5000/api/admin/doctors/${doctorId}`, {
+      const response = await fetch(`https://cliniq-1-hmus.onrender.com/api/admin/doctors/${doctorId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -261,7 +261,7 @@ export default function AdminDoctorsPage() {
         location: editForm.location || null
       }
 
-      const response = await fetch(`http://localhost:5000/api/admin/doctors/${editingDoctor.doctor_id}`, {
+      const response = await fetch(`https://cliniq-1-hmus.onrender.com/api/admin/doctors/${editingDoctor.doctor_id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

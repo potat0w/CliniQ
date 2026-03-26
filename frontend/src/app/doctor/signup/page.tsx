@@ -37,7 +37,7 @@ export default function DoctorSignupPage() {
         phone: formData.phone || null
       }
 
-      const response = await fetch('http://localhost:5000/api/doctors/register', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/doctors/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

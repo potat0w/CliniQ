@@ -127,7 +127,7 @@ export default function VoiceAgent() {
       const formData = new FormData();
       formData.append('audio', audioBlob, `recording-${Date.now()}.webm`);
       
-      const transcribeResponse = await fetch('http://localhost:5000/api/transcribe', {
+      const transcribeResponse = await fetch('https://cliniq-1-hmus.onrender.com/api/transcribe', {
         method: 'POST',
         body: formData,
       });
@@ -160,7 +160,7 @@ export default function VoiceAgent() {
     setIsAnalyzing(true);
     
     try {
-      const response = await fetch('http://localhost:5000/api/medical/analyze', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/medical/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -217,7 +217,7 @@ export default function VoiceAgent() {
       const token = localStorage.getItem('token');
       
       // First get available slots for doctor
-      const slotsResponse = await fetch(`http://localhost:5000/api/patients/doctors/${doctor.id}/availability`, {
+      const slotsResponse = await fetch(`https://cliniq-1-hmus.onrender.com/api/patients/doctors/${doctor.id}/availability`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -252,7 +252,7 @@ export default function VoiceAgent() {
     try {
       const token = localStorage.getItem('token');
       
-      const response = await fetch('http://localhost:5000/api/patients/appointments', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/patients/appointments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

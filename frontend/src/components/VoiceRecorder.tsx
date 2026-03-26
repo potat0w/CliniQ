@@ -108,7 +108,7 @@ export default function VoiceRecorder() {
       const formData = new FormData();
       formData.append('audio', audioBlob, `recording-${Date.now()}.webm`);
       
-      const response = await fetch('http://localhost:5000/api/transcribe', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/transcribe', {
         method: 'POST',
         body: formData,
       });
@@ -141,7 +141,7 @@ export default function VoiceRecorder() {
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:5000/api/medical/analyze', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/medical/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

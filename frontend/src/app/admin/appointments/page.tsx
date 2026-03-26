@@ -55,7 +55,7 @@ export default function AdminAppointmentsPage() {
   const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/admin/appointments', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/admin/appointments', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -89,7 +89,7 @@ export default function AdminAppointmentsPage() {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5000/api/admin/appointments/${appointmentId}`, {
+      const response = await fetch(`https://cliniq-1-hmus.onrender.com/api/admin/appointments/${appointmentId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -168,7 +168,7 @@ export default function AdminAppointmentsPage() {
         payment_done: editForm.payment_done
       }
 
-      const response = await fetch(`http://localhost:5000/api/admin/appointments/${editingAppointment.appointment_id}`, {
+      const response = await fetch(`https://cliniq-1-hmus.onrender.com/api/admin/appointments/${editingAppointment.appointment_id}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

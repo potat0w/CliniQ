@@ -33,7 +33,7 @@ export default function DoctorImport({ onImportComplete }: DoctorImportProps) {
 
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/admin/doctors/import', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/admin/doctors/import', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`

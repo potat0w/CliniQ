@@ -130,7 +130,7 @@ export default function DashboardPage() {
     setLoadingSlots(true)
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch(`http://localhost:5000/api/patients/doctors/${doctorId}/availability`, {
+      const response = await fetch(`https://cliniq-1-hmus.onrender.com/api/patients/doctors/${doctorId}/availability`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -311,7 +311,7 @@ const fetchDoctors = async () => {
   const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/patients/appointments', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/patients/appointments', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -347,7 +347,7 @@ const fetchDoctors = async () => {
     try {
       const token = localStorage.getItem('token')
       
-      const slotsResponse = await fetch(`http://localhost:5000/api/patients/doctors/${selectedDoctor.doctor_id}/availability`, {
+      const slotsResponse = await fetch(`https://cliniq-1-hmus.onrender.com/api/patients/doctors/${selectedDoctor.doctor_id}/availability`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -367,7 +367,7 @@ const fetchDoctors = async () => {
 
       const firstSlot = slots[0]
       
-      const response = await fetch('http://localhost:5000/api/patients/appointments', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/patients/appointments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
