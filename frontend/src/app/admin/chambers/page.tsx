@@ -10,7 +10,7 @@ interface Chamber {
   chamber_name: string
   location: string
   doctor_id?: number | null
-  specialties?: string[]
+  specialties?: string[] | string | null
 }
 
 export default function AdminChambersPage() {
@@ -670,7 +670,7 @@ export default function AdminChambersPage() {
                   </div>
                 </div>
 
-                {open && specialtyCount > 0 && (
+                {open && Array.isArray(chamber.specialties) && chamber.specialties.length > 0 && (
                   <div className="border-t border-border/70">
                     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4">
                       {chamber.specialties.map((s, i) => (
