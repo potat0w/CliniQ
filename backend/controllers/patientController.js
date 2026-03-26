@@ -110,8 +110,7 @@ const getDoctors = asyncHandler(async (req, res) => {
         location,
         specialties
       )
-    `)
-    .not('email', 'is', null);
+    `);
 
   if (error) {
     return res.status(400).json({ error: error.message });
@@ -403,8 +402,7 @@ const getDoctorsFromCSV = asyncHandler(async (req, res) => {
           location,
           specialties
         )
-      `)
-      .not('email', 'is', null);
+      `);
 
     if (error) {
       console.error('Database error:', error);
