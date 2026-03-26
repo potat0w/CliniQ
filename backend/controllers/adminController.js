@@ -49,31 +49,12 @@ const getAllDoctors = asyncHandler(async (req, res) => {
   const offset = (page - 1) * limit;
   const { specialty } = req.query;
 
-  // Build query
-  let query = supabase
+  // Build base query for count
+  let countQuery = supabase
     .from('doctors')
-    .select(`
-      *,
-      chambers (
-        chamber_id,
-        chamber_name,
-        location
-      )
-    `, { count: 'exact' });
+    .select('*', { count: 'exact' });
 
-  // Apply specialty filter if provided
-  if (specialty && specialty !== 'all') {
-    query = query.eq('speciality', specialty);
-  }
-
-  // Get total count with filter
-  const { count, error: countError } = await query;
-
-  if (countError) {
-    return res.status(400).json({ error: countError.message });
-  }
-
-  // Get paginated data with chamber information
+  // Build base query for data
   let dataQuery = supabase
     .from('doctors')
     .select(`
@@ -87,9 +68,18 @@ const getAllDoctors = asyncHandler(async (req, res) => {
 
   // Apply specialty filter if provided
   if (specialty && specialty !== 'all') {
+    countQuery = countQuery.eq('speciality', specialty);
     dataQuery = dataQuery.eq('speciality', specialty);
   }
 
+  // Get total count with filter
+  const { count, error: countError } = await countQuery;
+
+  if (countError) {
+    return res.status(400).json({ error: countError.message });
+  }
+
+  // Get paginated data with chamber information
   const { data: doctors, error } = await dataQuery
     .order('doctor_id', { ascending: false })
     .range(offset, offset + limit - 1);
