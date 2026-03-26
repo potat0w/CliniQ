@@ -1,9 +1,34 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
-const fs = require('fs');
-const path = require('path');
+const supabase = require('../config/db');
 
 // Initialize Gemini AI client
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const mapGeminiDoctorToDbSpecialty = (doctor) => {
+  const d = String(doctor || '').trim().toLowerCase();
+
+  if (!d) return '';
+
+  if (d.includes('derma')) return 'DERMATOLOGIST';
+  if (d.includes('skin')) return 'DERMATOLOGIST';
+  if (d.includes('cardio')) return 'CARDIOLOGIST';
+  if (d.includes('heart')) return 'CARDIOLOGIST';
+  if (d.includes('neuro')) return 'NEUROLOGIST';
+  if (d.includes('gastro')) return 'GASTROENTEROLOGIST';
+  if (d.includes('ortho')) return 'ORTHOPEDIC';
+  if (d.includes('ent')) return 'ENT';
+  if (d.includes('ophthal') || d.includes('eye')) return 'OPHTHALMOLOGIST';
+  if (d.includes('psych')) return 'PSYCHIATRIST';
+  if (d.includes('uro')) return 'UROLOGIST';
+  if (d.includes('dent')) return 'DENTIST';
+  if (d.includes('gyne')) return 'GYNECOLOGIST';
+  if (d.includes('pedia')) return 'PEDIATRICIAN';
+  if (d.includes('internal')) return 'INTERNAL MEDICINE';
+  if (d.includes('general')) return 'GENERAL PHYSICIAN';
+  if (d.includes('emergency')) return 'EMERGENCY MEDICINE';
+
+  return doctor.toUpperCase();
+};
 
 /**
  * Process medical symptoms and provide structured medical guidance
@@ -42,6 +67,16 @@ Your task is to:
    - Severity (mild/moderate/severe if mentioned)
 
 2. Based on the symptoms, suggest ONLY the most appropriate doctor specialty.
+   - You MUST output EXACTLY ONE value from this list:
+     General Medicine, Internal Medicine, Cardiology, Gastroenterology, Neurology, Dermatology, Orthopedics, Gynecology, Pediatrics, ENT, Ophthalmology, Psychiatry, Urology, Dentistry, Emergency Medicine
+   - If symptoms mention rash/rashes/skin/itching/hives/urticaria: choose Dermatology.
+   - If symptoms mention chest pain: choose Cardiology UNLESS the user also explicitly mentions a red-flag:
+     shortness of breath, fainting/passed out, crushing/pressure/tightness, sweating with chest pain, or pain spreading to arm/jaw/back. Then choose Emergency Medicine.
+   - Do NOT default to General Medicine if a clear specialty applies.
+
+Examples:
+User: "I have rashes all over my body and itching."
+Doctor: Dermatology
 
 3. Keep the response VERY SHORT.
 
@@ -135,127 +170,34 @@ const parseMedicalResponse = (response) => {
  */
 const getRecommendedDoctors = async (specialty) => {
   try {
-    const csvPath = path.join(__dirname, '../doctors_processed_data.csv');
-    const csvData = fs.readFileSync(csvPath, 'utf8');
-    
-    // Parse CSV properly handling quoted fields
-    const lines = csvData.split('\n').filter(line => line.trim());
-    const headers = parseCSVLine(lines[0]);
-    
-    const doctors = [];
-    
-    // Qualification scoring system
-    const qualificationScores = {
-      'MBBS': 1,
-      'FCPS': 2,
-      'MD': 3,
-      'MS': 2.5,
-      'PHD': 3.5,
-      'BCS': 1.5,
-      'MCPS': 1.8,
-      'CCD': 1.2,
-      'PGT': 1.3,
-      'BDS': 1,
-      'MPH': 1.5
-    };
-    
-    for (let i = 1; i < lines.length; i++) {
-      const values = parseCSVLine(lines[i]);
-      if (values.length >= headers.length) {
-        const doctor = {};
-        headers.forEach((header, index) => {
-          doctor[header.trim()] = values[index] ? values[index].trim() : '';
-        });
-        
-        // Match specialty (case-insensitive, partial match with common variations)
-        const specialtyNormalized = specialty.toLowerCase().trim();
-        const doctorSpecialty = doctor.Speciality ? doctor.Speciality.toLowerCase().trim() : '';
-        
-        // Handle common specialty variations
-        const specialtyMatches = 
-          doctorSpecialty.includes(specialtyNormalized) ||
-          specialtyNormalized.includes(doctorSpecialty) ||
-          (specialtyNormalized.includes('cardio') && doctorSpecialty.includes('cardio')) ||
-          (specialtyNormalized.includes('neuro') && doctorSpecialty.includes('neuro')) ||
-          (specialtyNormalized.includes('medic') && doctorSpecialty.includes('medic')) ||
-          (specialtyNormalized.includes('surge') && doctorSpecialty.includes('surge')) ||
-          (specialtyNormalized.includes('pedia') && doctorSpecialty.includes('pedia')) ||
-          (specialtyNormalized.includes('gynae') && doctorSpecialty.includes('gynae')) ||
-          (specialtyNormalized.includes('ortho') && doctorSpecialty.includes('ortho'));
-        
-        if (doctor.Speciality && specialtyMatches) {
-          
-          // Calculate qualification score
-          let qualificationScore = 0;
-          const education = doctor.Education || '';
-          
-          for (const [qualification, score] of Object.entries(qualificationScores)) {
-            if (education.toLowerCase().includes(qualification.toLowerCase())) {
-              qualificationScore += score;
-            }
-          }
-          
-          // Calculate experience score (normalized)
-          const experience = parseInt(doctor.Experience) || 0;
-          const maxExperience = 50; // Assumed max experience for normalization
-          const normalizedExperience = experience / maxExperience;
-          
-          // Calculate qualification score (normalized)
-          const maxQualificationScore = 10; // Assumed max qualification score
-          const normalizedQualification = Math.min(qualificationScore / maxQualificationScore, 1);
-          
-          // Weighted recommendation score (60% experience, 40% qualification)
-          const recommendationScore = (0.6 * normalizedExperience) + (0.4 * normalizedQualification);
-          
-          doctors.push({
-            id: doctor['Doctor ID'],
-            name: doctor['Doctor Name'],
-            education: doctor.Education,
-            specialty: doctor.Speciality,
-            experience: experience,
-            chamber: doctor.Chamber,
-            location: doctor.Location,
-            concentration: doctor.Concentration,
-            qualificationScore: qualificationScore,
-            recommendationScore: recommendationScore
-          });
-        }
-      }
+    const mappedSpecialty = mapGeminiDoctorToDbSpecialty(specialty);
+
+    const { data, error } = await supabase
+      .from('doctors')
+      .select('doctor_id, doctor_name, education, speciality, experience, email, chambers(chamber_name, location)')
+      .ilike('speciality', `%${mappedSpecialty}%`)
+      .order('experience', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error('Supabase doctors query error:', error);
+      return [];
     }
-    
-    // Sort by recommendation score (descending)
-    doctors.sort((a, b) => b.recommendationScore - a.recommendationScore);
-    
-    // Return top 10 doctors (more options for patients)
-    return doctors.slice(0, 10);
-    
+
+    return (data || []).map((d) => ({
+      id: d.doctor_id,
+      name: d.doctor_name,
+      education: d.education,
+      specialty: d.speciality,
+      experience: d.experience || 0,
+      chamber: d.chambers?.[0]?.chamber_name || '',
+      location: d.chambers?.[0]?.location || '',
+      concentration: ''
+    }));
   } catch (error) {
-    console.error('Error reading doctors CSV:', error);
+    console.error('Error fetching doctors:', error);
     return [];
   }
-};
-
-// Helper function to parse CSV lines with quoted fields
-const parseCSVLine = (line) => {
-  const result = [];
-  let current = '';
-  let inQuotes = false;
-  
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    
-    if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === ',' && !inQuotes) {
-      result.push(current);
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-  
-  result.push(current);
-  return result;
 };
 
 module.exports = {
