@@ -49,56 +49,101 @@ const getAllDoctors = asyncHandler(async (req, res) => {
   const offset = (page - 1) * limit;
   const { specialty } = req.query;
 
-  // Build base query for count
-  let countQuery = supabase
-    .from('doctors')
-    .select('*', { count: 'exact' });
+  try {
+    // For large page numbers, use cursor-based pagination to avoid timeout
+    if (page > 500) {
+      // Use a simpler query without joins for large pages
+      let simpleQuery = supabase
+        .from('doctors')
+        .select('doctor_id, doctor_name, email, speciality, experience', { count: 'exact' });
 
-  // Build base query for data
-  let dataQuery = supabase
-    .from('doctors')
-    .select(`
-      *,
-      chambers (
-        chamber_id,
-        chamber_name,
-        location
-      )
-    `);
+      if (specialty && specialty !== 'all') {
+        simpleQuery = simpleQuery.eq('speciality', specialty);
+      }
 
-  // Apply specialty filter if provided
-  if (specialty && specialty !== 'all') {
-    countQuery = countQuery.eq('speciality', specialty);
-    dataQuery = dataQuery.eq('speciality', specialty);
-  }
+      const { count, error: countError } = await simpleQuery;
+      
+      if (countError) {
+        return res.status(400).json({ error: countError.message });
+      }
 
-  // Get total count with filter
-  const { count, error: countError } = await countQuery;
+      // Get paginated data without joins for large pages
+      const { data: doctors, error } = await simpleQuery
+        .order('doctor_id', { ascending: false })
+        .range(offset, offset + limit - 1);
 
-  if (countError) {
-    return res.status(400).json({ error: countError.message });
-  }
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
 
-  // Get paginated data with chamber information
-  const { data: doctors, error } = await dataQuery
-    .order('doctor_id', { ascending: false })
-    .range(offset, offset + limit - 1);
+      const totalPages = Math.ceil(count / limit);
 
-  if (error) {
-    return res.status(400).json({ error: error.message });
-  }
-
-  const totalPages = Math.ceil(count / limit);
-
-  res.json({
-    data: doctors,
-    pagination: {
-      currentPage: page,
-      totalPages: totalPages,
-      totalItems: count,
-      itemsPerPage: limit
+      res.json({
+        data: doctors,
+        pagination: {
+          currentPage: page,
+          totalPages: totalPages,
+          totalItems: count,
+          itemsPerPage: limit
+        }
+      });
+      return;
     }
-  });
+
+    // Build base query for count (for smaller pages)
+    let countQuery = supabase
+      .from('doctors')
+      .select('*', { count: 'exact' });
+
+    // Build base query for data
+    let dataQuery = supabase
+      .from('doctors')
+      .select(`
+        *,
+        chambers (
+          chamber_id,
+          chamber_name,
+          location
+        )
+      `);
+
+    // Apply specialty filter if provided
+    if (specialty && specialty !== 'all') {
+      countQuery = countQuery.eq('speciality', specialty);
+      dataQuery = dataQuery.eq('speciality', specialty);
+    }
+
+    // Get total count with filter
+    const { count, error: countError } = await countQuery;
+
+    if (countError) {
+      return res.status(400).json({ error: countError.message });
+    }
+
+    // Get paginated data with chamber information
+    const { data: doctors, error } = await dataQuery
+      .order('doctor_id', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+
+    const totalPages = Math.ceil(count / limit);
+
+    res.json({
+      data: doctors,
+      pagination: {
+        currentPage: page,
+        totalPages: totalPages,
+        totalItems: count,
+        itemsPerPage: limit
+      }
+    });
+  } catch (error) {
+    console.error('Error in getAllDoctors:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 const createDoctor = asyncHandler(async (req, res) => {
