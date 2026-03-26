@@ -4,6 +4,8 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
+const fs = require('fs');
+const path = require('path');
 
 const { errorHandler, notFound } = require('./middlewares/errorMiddleware');
 
@@ -16,6 +18,12 @@ const medicalAssistantRoutes = require('./routes/medicalAssistantRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+// Ensure uploads directory exists
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
