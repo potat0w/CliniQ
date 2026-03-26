@@ -244,6 +244,12 @@ export default function DashboardPage() {
 const fetchDoctors = async () => {
     try {
       const token = localStorage.getItem('token')
+      if (!token) {
+        console.error('No token found')
+        setDoctors([])
+        return
+      }
+
       const response = await fetch('https://cliniq-1-hmus.onrender.com/api/patients/doctors', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -256,15 +262,15 @@ const fetchDoctors = async () => {
         
         if (data.doctors && Array.isArray(data.doctors)) {
           const doctors = data.doctors.map((doctor: any): Doctor => ({
-            doctor_id: doctor.doctor_id,
-            doctor_name: doctor.doctor_name,
-            email: doctor.email || `${doctor.doctor_name.replace(/[^a-zA-Z\s]/g, '').toLowerCase().replace(/\s+/g, '.')}@hospital.com`,
-            speciality: doctor.speciality,
-            experience: doctor.experience,
-            chamber: doctor.chamber,
-            location: doctor.location,
-            education: doctor.education || [],
-            concentration: doctor.concentration || [],
+            doctor_id: String(doctor.doctor_id || ''),
+            doctor_name: String(doctor.doctor_name || ''),
+            email: String(doctor.email || ''),
+            speciality: String(doctor.speciality || ''),
+            experience: Number(doctor.experience) || 0,
+            chamber: String(doctor.chamber || ''),
+            location: String(doctor.location || ''),
+            education: Array.isArray(doctor.education) ? doctor.education : [],
+            concentration: Array.isArray(doctor.concentration) ? doctor.concentration : [],
             certifications: doctor.certifications || {},
             specializations: doctor.specializations || {}
           }))
@@ -278,11 +284,12 @@ const fetchDoctors = async () => {
         }
       } else {
         console.error('Failed to fetch doctors from API, status:', response.status)
-        // Fallback to empty array
+        // Fallback to empty array to prevent crash
         setDoctors([])
       }
     } catch (error) {
       console.error('Error fetching doctors from API:', error)
+      // Fallback to empty array to prevent crash
       setDoctors([])
     }
   }
@@ -290,6 +297,12 @@ const fetchDoctors = async () => {
   const fetchAppointments = async () => {
     try {
       const token = localStorage.getItem('token')
+      if (!token) {
+        console.error('No token found for appointments')
+        setAppointments([])
+        return
+      }
+
       const response = await fetch('https://cliniq-1-hmus.onrender.com/api/patients/appointments', {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -299,13 +312,14 @@ const fetchDoctors = async () => {
       if (response.ok) {
         const data = await response.json()
         console.log('Appointments data:', data)
-        setAppointments(data || [])
+        setAppointments(Array.isArray(data) ? data : [])
       } else {
-        const error = await response.json()
-        console.error('Error response:', error)
+        console.error('Error response:', response.status)
+        setAppointments([])
       }
     } catch (error) {
       console.error('Error fetching appointments:', error)
+      setAppointments([])
     }
   }
 
