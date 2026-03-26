@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import '@/styles/admin-theme.css'
 import Swal from 'sweetalert2'
+import Pagination from '../../../components/ui/Pagination'
 
 interface Doctor {
   doctor_id: number
@@ -11,21 +12,33 @@ interface Doctor {
   email: string
   speciality: string
   experience?: number | null
+  chamber_id?: number | null
+  chambers?: {
+    chamber_id: number
+    chamber_name: string
+    location: string
+  } | null
   chamber?: string | null
   location?: string | null
 }
 
 export default function AdminDoctorsPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([])
+  const [chambers, setChambers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null)
   const [selectedSpeciality, setSelectedSpeciality] = useState<string>('all')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalItems, setTotalItems] = useState(0)
+  const itemsPerPage = 10
   const [editForm, setEditForm] = useState({
     doctor_name: '',
     email: '',
     speciality: '',
     experience: '',
+    chamber_id: '',
     chamber: '',
     location: ''
   })
@@ -62,12 +75,13 @@ export default function AdminDoctorsPage() {
     }
 
     fetchDoctors()
+    fetchChambers()
   }, [router])
 
-  const fetchDoctors = async () => {
+  const fetchChambers = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('http://localhost:5000/api/admin/doctors', {
+      const response = await fetch('http://localhost:5000/api/admin/chambers', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -75,12 +89,49 @@ export default function AdminDoctorsPage() {
 
       if (response.ok) {
         const data = await response.json()
-        const processedData = data.map((doctor: any) => ({
+        const chambersData = data.data || data
+        setChambers(chambersData)
+      }
+    } catch (error) {
+      console.error('Error fetching chambers:', error)
+    }
+  }
+
+  const fetchDoctors = async (page: number = currentPage) => {
+    try {
+      setLoading(true)
+      const token = localStorage.getItem('token')
+      const specialtyParam = selectedSpeciality !== 'all' ? `&specialty=${encodeURIComponent(selectedSpeciality)}` : ''
+      const response = await fetch(`http://localhost:5000/api/admin/doctors?page=${page}&limit=${itemsPerPage}${specialtyParam}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const processedData = data.data?.map((doctor: any) => ({
           ...doctor,
           doctor_id: doctor.doctor_id || doctor.id // Use doctor_id if present, otherwise use id
+        })) || data.map((doctor: any) => ({
+          ...doctor,
+          doctor_id: doctor.doctor_id || doctor.id
         }))
         console.log('Fetched doctors:', processedData) // Debug log
         setDoctors(processedData)
+        
+        // Set pagination info if available
+        if (data.pagination) {
+          setTotalPages(data.pagination.totalPages)
+          setTotalItems(data.pagination.totalItems)
+          setCurrentPage(data.pagination.currentPage)
+        } else {
+          // Fallback for non-paginated response
+          setTotalPages(1)
+          setTotalItems(processedData.length)
+          setCurrentPage(1)
+        }
+        
         showToast('Success', 'Doctors loaded successfully', 'success')
       } else {
         setError('Failed to fetch doctors')
@@ -94,13 +145,26 @@ export default function AdminDoctorsPage() {
     }
   }
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    fetchDoctors(page)
+  }
+
+  // Reset to page 1 when specialty changes
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1)
+    }
+    fetchDoctors(1)
+  }, [selectedSpeciality])
+
   // Get unique specialities from doctors data
   const getUniqueSpecialities = () => {
     const specialities = [...new Set(doctors.map(doctor => doctor.speciality).filter(Boolean))]
     return specialities.sort()
   }
 
-  // Group doctors by speciality
+  // Group doctors by speciality (only for 'all' view)
   const getDoctorsBySpeciality = () => {
     if (selectedSpeciality === 'all') {
       const grouped: { [key: string]: Doctor[] } = {}
@@ -113,8 +177,9 @@ export default function AdminDoctorsPage() {
       })
       return grouped
     } else {
+      // For filtered view, return all doctors under the selected specialty
       return {
-        [selectedSpeciality]: doctors.filter(doctor => doctor.speciality === selectedSpeciality)
+        [selectedSpeciality]: doctors
       }
     }
   }
@@ -163,8 +228,9 @@ export default function AdminDoctorsPage() {
       email: doctor.email || '',
       speciality: doctor.speciality || '',
       experience: doctor.experience?.toString() || '',
-      chamber: doctor.chamber || '',
-      location: doctor.location || ''
+      chamber_id: doctor.chamber_id?.toString() || doctor.chambers?.chamber_id?.toString() || '',
+      chamber: doctor.chambers?.chamber_name || doctor.chamber || '',
+      location: doctor.chambers?.location || doctor.location || ''
     })
   }
 
@@ -175,6 +241,7 @@ export default function AdminDoctorsPage() {
       email: '',
       speciality: '',
       experience: '',
+      chamber_id: '',
       chamber: '',
       location: ''
     })
@@ -224,9 +291,30 @@ export default function AdminDoctorsPage() {
 
   if (loading) {
     return (
-      <div className="admin-dashboard-body">
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-lg text-admin-text">Loading...</div>
+      <div className="admin-dashboard-body min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-6">
+          {/* Animated Loading Icon */}
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-admin-border/30 border-t-admin-accent rounded-full animate-spin mx-auto"></div>
+            <div className="absolute inset-0 w-16 h-16 border-4 border-transparent border-b-admin-blue3 rounded-full animate-spin mx-auto" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+          </div>
+          
+          {/* Loading Text with Animation */}
+          <div className="space-y-2">
+            <div className="text-xl font-semibold text-admin-text animate-pulse">
+              Loading Doctors...
+            </div>
+            <div className="text-sm text-admin-muted animate-pulse" style={{ animationDelay: '0.5s' }}>
+              Please wait while we fetch the data
+            </div>
+          </div>
+          
+          {/* Animated Dots */}
+          <div className="flex justify-center space-x-2">
+            <div className="w-2 h-2 bg-admin-accent rounded-full animate-bounce" style={{ animationDelay: '0s' }}></div>
+            <div className="w-2 h-2 bg-admin-blue3 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-2 h-2 bg-admin-blue4 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+          </div>
         </div>
       </div>
     )
@@ -342,12 +430,26 @@ export default function AdminDoctorsPage() {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-300 mb-1">Chamber</label>
-                    <input
-                      type="text"
-                      value={editForm.chamber}
-                      onChange={(e) => setEditForm({...editForm, chamber: e.target.value})}
-                      className="block w-full px-3 py-2 text-sm text-white bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent placeholder-gray-400"
-                    />
+                    <select
+                      value={editForm.chamber_id}
+                      onChange={(e) => {
+                        const selectedChamber = chambers.find(c => c.chamber_id.toString() === e.target.value)
+                        setEditForm({
+                          ...editForm, 
+                          chamber_id: e.target.value,
+                          chamber: selectedChamber?.chamber_name || '',
+                          location: selectedChamber?.location || ''
+                        })
+                      }}
+                      className="block w-full px-3 py-2 text-sm text-white bg-gray-800 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="">Select a chamber</option>
+                      {chambers.map((chamber) => (
+                        <option key={chamber.chamber_id} value={chamber.chamber_id}>
+                          {chamber.chamber_name} - {chamber.location}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   
                   <div>
@@ -397,7 +499,7 @@ export default function AdminDoctorsPage() {
               <p className="text-muted-foreground/70 text-xs mt-1">Get started by adding your first doctor</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div>
               {Object.entries(getDoctorsBySpeciality()).map(([speciality, doctorsInGroup]) => (
                 <div key={speciality}>
                   {selectedSpeciality !== 'all' && (
@@ -434,23 +536,30 @@ export default function AdminDoctorsPage() {
                                   <span>{doctor.experience} years</span>
                                 </span>
                               )}
-                              {doctor.chamber && (
+                              {doctor.chambers ? (
+                                <span className="text-xs text-muted-foreground flex items-center space-x-1">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                  </svg>
+                                  <span>{doctor.chambers.chamber_name}</span>
+                                </span>
+                              ) : doctor.chamber ? (
                                 <span className="text-xs text-muted-foreground flex items-center space-x-1">
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                   </svg>
                                   <span>{doctor.chamber}</span>
                                 </span>
-                              )}
-                              {doctor.location && (
+                              ) : null}
+                              {doctor.chambers?.location || doctor.location ? (
                                 <span className="text-xs text-muted-foreground flex items-center space-x-1">
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                   </svg>
-                                  <span>{doctor.location}</span>
+                                  <span>{doctor.chambers?.location || doctor.location}</span>
                                 </span>
-                              )}
+                              ) : null}
                             </div>
                           </div>
                         </div>
@@ -484,6 +593,15 @@ export default function AdminDoctorsPage() {
             </div>
           )}
         </div>
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          onPageChange={handlePageChange}
+          itemsPerPage={itemsPerPage}
+        />
       </main>
     </div>
   )

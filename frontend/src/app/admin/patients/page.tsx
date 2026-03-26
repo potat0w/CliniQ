@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Users, Plus, Search, Filter } from 'lucide-react'
 import { EditPatientModal } from '@/components/admin/patients/EditPatientModal'
 import { PatientErrorBanner } from '@/components/admin/patients/PatientErrorBanner'
 import { PatientRecordsList } from '@/components/admin/patients/PatientRecordsList'
-import { PatientsHeader } from '@/components/admin/patients/PatientsHeader'
+import { AdminPageHeader } from '@/components/admin/shared/AdminPageHeader'
 import type { Patient, PatientEditForm } from '@/components/admin/patients/types'
 
 const emptyEditForm = (): PatientEditForm => ({
@@ -22,6 +23,7 @@ export default function AdminPatientsPage() {
   const [error, setError] = useState('')
   const [editingPatient, setEditingPatient] = useState<Patient | null>(null)
   const [editForm, setEditForm] = useState<PatientEditForm>(emptyEditForm())
+  const [searchTerm, setSearchTerm] = useState('')
   const router = useRouter()
 
   useEffect(() => {
@@ -133,19 +135,32 @@ export default function AdminPatientsPage() {
     }
   }
 
+  const filteredPatients = patients.filter(patient =>
+    patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 flex items-center justify-center">
+        <div className="text-white">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <PatientsHeader />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+      <AdminPageHeader
+        title="Manage Patients"
+        description="View and manage patient records"
+        actionButton={{
+          text: "Add New Patient",
+          onClick: () => {/* TODO: Implement add patient */},
+          icon: <Plus className="w-4 h-4" />
+        }}
+      />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && <PatientErrorBanner message={error} onDismiss={() => setError('')} />}
 
         {editingPatient && (
@@ -157,7 +172,40 @@ export default function AdminPatientsPage() {
           />
         )}
 
-        <PatientRecordsList patients={patients} onEdit={startEdit} onDelete={deletePatient} />
+        {/* Search and Filter */}
+        <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-xl p-6 mb-8">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
+              <input
+                type="text"
+                placeholder="Search patients by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            <button className="flex items-center space-x-2 px-4 py-3 bg-slate-700/50 border border-slate-600 rounded-lg text-white hover:bg-slate-700 transition-colors">
+              <Filter className="w-5 h-5" />
+              <span>Filter</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Patients List */}
+        <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700 rounded-xl overflow-hidden">
+          <div className="p-6 border-b border-slate-700">
+            <div className="flex items-center space-x-3">
+              <Users className="w-6 h-6 text-blue-400" />
+              <h2 className="text-xl font-semibold text-white">Patient Records</h2>
+              <span className="bg-blue-500/20 text-blue-400 px-2 py-1 rounded-lg text-sm">
+                {filteredPatients.length} patients
+              </span>
+            </div>
+          </div>
+          
+          <PatientRecordsList patients={filteredPatients} onEdit={startEdit} onDelete={deletePatient} />
+        </div>
       </main>
     </div>
   )

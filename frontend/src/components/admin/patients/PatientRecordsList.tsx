@@ -26,7 +26,7 @@ export function PatientRecordsList({ patients, onEdit, onDelete }: PatientRecord
           <p className="text-muted-foreground/70 text-xs mt-1">Get started by adding your first patient</p>
         </div>
       ) : (
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-zinc-700">
           {patients.map((patient) => (
             <PatientRow key={patient.patient_id} patient={patient} onEdit={onEdit} onDelete={onDelete} />
           ))}

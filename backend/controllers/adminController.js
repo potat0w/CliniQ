@@ -44,16 +44,71 @@ const loginAdmin = asyncHandler(async (req, res) => {
 });
 
 const getAllDoctors = asyncHandler(async (req, res) => {
-  const { data: doctors, error } = await supabase
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+  const { specialty } = req.query;
+
+  // Build query
+  let query = supabase
     .from('doctors')
-    .select('*')
-    .order('doctor_id', { ascending: false });
+    .select(`
+      *,
+      chambers (
+        chamber_id,
+        chamber_name,
+        location
+      )
+    `, { count: 'exact' });
+
+  // Apply specialty filter if provided
+  if (specialty && specialty !== 'all') {
+    query = query.eq('speciality', specialty);
+  }
+
+  // Get total count with filter
+  const { count, error: countError } = await query;
+
+  if (countError) {
+    return res.status(400).json({ error: countError.message });
+  }
+
+  // Get paginated data with chamber information
+  let dataQuery = supabase
+    .from('doctors')
+    .select(`
+      *,
+      chambers (
+        chamber_id,
+        chamber_name,
+        location
+      )
+    `);
+
+  // Apply specialty filter if provided
+  if (specialty && specialty !== 'all') {
+    dataQuery = dataQuery.eq('speciality', specialty);
+  }
+
+  const { data: doctors, error } = await dataQuery
+    .order('doctor_id', { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (error) {
     return res.status(400).json({ error: error.message });
   }
 
-  res.json(doctors);
+  const totalPages = Math.ceil(count / limit);
+
+  res.json({
+    data: doctors,
+    pagination: {
+      currentPage: page,
+      totalPages: totalPages,
+      totalItems: count,
+      itemsPerPage: limit
+    }
+  });
 });
 
 const createDoctor = asyncHandler(async (req, res) => {
@@ -233,65 +288,96 @@ const deletePatient = asyncHandler(async (req, res) => {
 });
 
 const getAllChambers = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
+
+  // Get total count
+  const { count, error: countError } = await supabase
+    .from('chambers')
+    .select('*', { count: 'exact', head: true });
+
+  if (countError) {
+    return res.status(400).json({ error: countError.message });
+  }
+
+  // Get paginated data
   const { data: chambers, error } = await supabase
     .from('chambers')
     .select('*')
-    .order('chamber_id', { ascending: false });
+    .order('chamber_id', { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (error) {
     return res.status(400).json({ error: error.message });
   }
 
-  res.json(chambers);
+  const totalPages = Math.ceil(count / limit);
+
+  res.json({
+    data: chambers,
+    pagination: {
+      currentPage: page,
+      totalPages: totalPages,
+      totalItems: count,
+      itemsPerPage: limit
+    }
+  });
 });
 
 const createChamber = asyncHandler(async (req, res) => {
-  const { name, address, phone, email } = req.body;
+  const { chamber_name, location, doctor_id, specialties } = req.body;
 
   const { data: chamber, error } = await supabase
     .from('chambers')
     .insert([{
-      name,
-      address,
-      phone,
-      email
+      chamber_name,
+      location,
+      doctor_id,
+      specialties
     }])
-    .select()
-    .single();
+    .select();
 
   if (error) {
     return res.status(400).json({ error: error.message });
   }
 
+  if (!chamber || chamber.length === 0) {
+    return res.status(400).json({ error: 'Failed to create chamber' });
+  }
+
   res.status(201).json({
     message: 'Chamber created successfully',
-    chamber
+    chamber: chamber[0]
   });
 });
 
 const updateChamber = asyncHandler(async (req, res) => {
   const { chamberId } = req.params;
-  const { name, address, phone, email } = req.body;
+  const { chamber_name, location, doctor_id, specialties } = req.body;
 
   const { data: chamber, error } = await supabase
     .from('chambers')
     .update({
-      name,
-      address,
-      phone,
-      email
+      chamber_name,
+      location,
+      doctor_id,
+      specialties
     })
-    .eq('id', chamberId)
-    .select()
-    .single();
+    .eq('chamber_id', chamberId)
+    .select();
 
   if (error) {
     return res.status(400).json({ error: error.message });
   }
 
+  if (!chamber || chamber.length === 0) {
+    return res.status(404).json({ error: 'Chamber not found' });
+  }
+
   res.json({
     message: 'Chamber updated successfully',
-    chamber
+    chamber: chamber[0]
   });
 });
 
@@ -300,7 +386,7 @@ const deleteChamber = asyncHandler(async (req, res) => {
 
   const { data: doctors } = await supabase
     .from('doctors')
-    .select('id')
+    .select('doctor_id')
     .eq('chamber_id', chamberId);
 
   if (doctors && doctors.length > 0) {
@@ -310,7 +396,7 @@ const deleteChamber = asyncHandler(async (req, res) => {
   const { error } = await supabase
     .from('chambers')
     .delete()
-    .eq('id', chamberId);
+    .eq('chamber_id', chamberId);
 
   if (error) {
     return res.status(400).json({ error: error.message });

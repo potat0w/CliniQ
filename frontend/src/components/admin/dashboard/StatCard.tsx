@@ -1,9 +1,11 @@
 'use client'
 
+import React from 'react'
+
 type StatCardProps = {
   label: string
   value: number
-  icon: string
+  icon: React.ReactNode
 }
 
 export function StatCard({ label, value, icon }: StatCardProps) {

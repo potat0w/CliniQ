@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Pagination from './ui/Pagination'
 
 interface Doctor {
   doctor_id: string
@@ -175,27 +176,13 @@ export default function DoctorList({ doctors, onBookAppointment }: DoctorListPro
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center gap-4 mt-6">
-          <button
-            onClick={() => setCurrentPage(p => p - 1)}
-            disabled={currentPage === 1}
-            className="text-xs text-zinc-400 hover:text-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            ← Prev
-          </button>
-          <span className="text-xs text-zinc-500">
-            {currentPage} / {totalPages} · {filteredDoctors.length} doctors
-          </span>
-          <button
-            onClick={() => setCurrentPage(p => p + 1)}
-            disabled={currentPage === totalPages}
-            className="text-xs text-zinc-400 hover:text-zinc-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            Next →
-          </button>
-        </div>
-      )}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={filteredDoctors.length}
+        onPageChange={setCurrentPage}
+        itemsPerPage={doctorsPerPage}
+      />
     </div>
   )
 }
