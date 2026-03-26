@@ -102,7 +102,14 @@ const getDoctors = asyncHandler(async (req, res) => {
       doctor_name,
       email,
       speciality,
-      experience
+      experience,
+      education,
+      chambers(
+        chamber_id,
+        chamber_name,
+        location,
+        specialties
+      )
     `)
     .not('email', 'is', null);
 
@@ -110,7 +117,21 @@ const getDoctors = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
 
-  res.json({ doctors });
+  const formattedDoctors = (doctors || []).map(doctor => ({
+    doctor_id: doctor.doctor_id,
+    doctor_name: doctor.doctor_name,
+    email: doctor.email,
+    speciality: doctor.speciality,
+    experience: doctor.experience || 0,
+    education: doctor.education || [],
+    chamber: doctor.chambers?.[0]?.chamber_name || '',
+    location: doctor.chambers?.[0]?.location || '',
+    concentration: doctor.chambers?.[0]?.specialties || [],
+    certifications: {}, // Add if needed from database
+    specializations: {} // Add if needed from database
+  }));
+
+  res.json({ doctors: formattedDoctors });
 });
 
 const getDoctorAvailability = asyncHandler(async (req, res) => {

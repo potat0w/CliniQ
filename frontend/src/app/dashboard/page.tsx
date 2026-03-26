@@ -245,7 +245,7 @@ export default function DashboardPage() {
 const fetchDoctors = async () => {
     try {
       const token = localStorage.getItem('token')
-      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/patients/doctors/csv', {
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/patients/doctors', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
