@@ -28,7 +28,7 @@ const limiter = rateLimit({
 app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? [process.env.FRONTEND_URL||['https://cliiniq.vercel.app'] || 'https://cliniq-nrow.onrender.com'||'https://cliniq-1-hmus.onrender.com'] 
+    ? [process.env.FRONTEND_URL, 'https://cliiniq.vercel.app', 'https://cliniq-nrow.onrender.com', 'https://cliniq-1-hmus.onrender.com']
     : ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true
 }));
