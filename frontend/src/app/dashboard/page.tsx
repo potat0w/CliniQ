@@ -244,67 +244,47 @@ export default function DashboardPage() {
 
 const fetchDoctors = async () => {
     try {
-      const response = await fetch('/doctors_processed_data.csv')
-      const csvText = await response.text()
-      
-      Papa.parse(csvText, {
-        header: true,
-        complete: (results) => {
-          console.log('Raw CSV data:', results.data)
-          console.log('Total rows:', results.data.length)
-          
-          const doctors = results.data
-            .filter((doctor: any, index: number) => {
-              // Skip header row and ensure we have basic data
-              if (index === 0 && doctor['Doctor ID'] === 'Doctor ID') return false
-              return doctor['Doctor ID'] && doctor['Doctor Name']
-            })
-            .map((doctor: any): Doctor => ({
-              doctor_id: doctor['Doctor ID'],
-              doctor_name: doctor['Doctor Name'],
-              email: `${doctor['Doctor Name'].replace(/[^a-zA-Z\s]/g, '').toLowerCase().replace(/\s+/g, '.')}@hospital.com`,
-              speciality: doctor['Speciality'],
-              experience: doctor['Experience'] ? parseInt(doctor['Experience']) : undefined,
-              chamber: doctor['Chamber'],
-              location: doctor['Location'],
-              education: parseStringArray(doctor['Education']),
-              concentration: parseStringArray(doctor['Concentration']),
-              certifications: {
-                MBBS: doctor['MBBS'] === '1',
-                FCPS: doctor['FCPS'] === '1',
-                BCS: doctor['BCS'] === '1',
-                MD: doctor['MD'] === '1',
-                MS: doctor['MS'] === '1',
-                MCPS: doctor['MCPS'] === '1',
-                CCD: doctor['CCD'] === '1',
-                PGT: doctor['PGT'] === '1',
-                BDS: doctor['BDS'] === '1',
-                MPH: doctor['MPH'] === '1'
-              },
-              specializations: {
-                gynae_problems: doctor['Gynae Problems'] === '1',
-                cardiac_medicine: doctor['Cardiac Medicine'] === '1',
-                general_medicine: doctor['General Medicine'] === '1',
-                aesthetic_medicine: doctor['Aesthetic Medicine'] === '1',
-                adolescent_medicine: doctor['Adolescent Medicine'] === '1',
-                infectious_diseases: doctor['Infectious Diseases'] === '1',
-                geriatric_medicine: doctor['Geriatric Medicine'] === '1',
-                pcos: doctor['Polycystic Ovary Syndrome (Pcos)'] === '1',
-                hormone_disturbances: doctor['Hormone Dirtubances'] === '1',
-                pediatric_health_checkup: doctor['Health Checkup (Pediatric)'] === '1'
-              }
-            }))
-          
-          console.log('Filtered doctors:', doctors.length)
-          console.log('First doctor:', doctors[0])
-          setDoctors(doctors)
-        },
-        error: (error: any) => {
-          console.error('Error parsing CSV:', error)
+      const token = localStorage.getItem('token')
+      const response = await fetch('https://cliniq-1-hmus.onrender.com/api/patients/doctors/csv', {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
       })
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Doctors data from API:', data)
+        
+        if (data.doctors && Array.isArray(data.doctors)) {
+          const doctors = data.doctors.map((doctor: any): Doctor => ({
+            doctor_id: doctor.doctor_id,
+            doctor_name: doctor.doctor_name,
+            email: doctor.email || `${doctor.doctor_name.replace(/[^a-zA-Z\s]/g, '').toLowerCase().replace(/\s+/g, '.')}@hospital.com`,
+            speciality: doctor.speciality,
+            experience: doctor.experience,
+            chamber: doctor.chamber,
+            location: doctor.location,
+            education: doctor.education || [],
+            concentration: doctor.concentration || [],
+            certifications: doctor.certifications || {},
+            specializations: doctor.specializations || {}
+          }))
+          
+          console.log('Processed doctors:', doctors.length)
+          console.log('First doctor:', doctors[0])
+          setDoctors(doctors)
+        } else {
+          console.error('Invalid doctors data format:', data)
+          setDoctors([])
+        }
+      } else {
+        console.error('Failed to fetch doctors from API, status:', response.status)
+        // Fallback to empty array
+        setDoctors([])
+      }
     } catch (error) {
-      console.error('Error fetching CSV:', error)
+      console.error('Error fetching doctors from API:', error)
+      setDoctors([])
     }
   }
 

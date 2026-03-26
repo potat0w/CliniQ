@@ -365,6 +365,63 @@ const rescheduleAppointment = asyncHandler(async (req, res) => {
 });
 
 const getDoctorsFromCSV = asyncHandler(async (req, res) => {
+  try {
+    // First try to get doctors from database with chambers
+    const { data: doctors, error } = await supabase
+      .from('doctors')
+      .select(`
+        doctor_id,
+        doctor_name,
+        email,
+        speciality,
+        experience,
+        education,
+        chambers(
+          chamber_id,
+          chamber_name,
+          location,
+          specialties
+        )
+      `)
+      .not('email', 'is', null);
+
+    if (error) {
+      console.error('Database error:', error);
+      // Fallback to CSV if database fails
+      return getDoctorsFromCSVFile(req, res);
+    }
+
+    if (doctors && doctors.length > 0) {
+      const formattedDoctors = doctors.map(doctor => ({
+        doctor_id: doctor.doctor_id,
+        doctor_name: doctor.doctor_name,
+        email: doctor.email,
+        speciality: doctor.speciality,
+        experience: doctor.experience,
+        education: doctor.education || [],
+        chamber: doctor.chambers?.[0]?.chamber_name || null,
+        location: doctor.chambers?.[0]?.location || null,
+        concentration: doctor.chambers?.[0]?.specialties || [],
+        certifications: {}, // Add if needed
+        specializations: {} // Add if needed
+      }));
+
+      res.json({
+        doctors: formattedDoctors,
+        total: formattedDoctors.length
+      });
+    } else {
+      // Fallback to CSV if no doctors in database
+      getDoctorsFromCSVFile(req, res);
+    }
+  } catch (error) {
+    console.error('Error in getDoctorsFromCSV:', error);
+    // Fallback to CSV
+    getDoctorsFromCSVFile(req, res);
+  }
+});
+
+const getDoctorsFromCSVFile = (req, res) => {
   const csvFilePath = './doctors_processed_data.csv';
   
   if (!fs.existsSync(csvFilePath)) {
@@ -427,7 +484,7 @@ const getDoctorsFromCSV = asyncHandler(async (req, res) => {
     .on('error', (error) => {
       res.status(500).json({ error: 'Error reading CSV file' });
     });
-});
+};
 
 module.exports = {
   registerPatient,
